@@ -1,0 +1,7 @@
+.classpath
+.project
+.settings/**
+WEA09.txt
+yData.txt
+logs/**
+target/**
