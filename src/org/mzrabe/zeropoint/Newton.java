@@ -25,7 +25,7 @@ public class Newton
 	/** maximal number of iterations */
 	private static int maxIter = 1000;
 	/** iteration steps for logging */
-	private static int logStep = 50;
+	private static int logStep = 1000;
 //	/** the implemetation to get the Jacobian matrix */
 //	private JacobianMatrix j = new JacobianMatrix();
 	private static final Logger log = LogManager.getRootLogger();
@@ -33,6 +33,10 @@ public class Newton
 	private static double[] bestSolution;
 	/** minimal residue */
 	private static double[] rMin;
+	/**
+	 * 
+	 */
+	public static boolean printSolution = false;
 	
 	private static BufferedWriter bw;
 	private static BufferedWriter bw1;
@@ -81,25 +85,25 @@ public class Newton
 		rMin = Arrays.copyOf(r, r.length);
 		bestSolution = Arrays.copyOf(x0, x0.length);
 		
-		try
-		{
-			bw = new BufferedWriter(new FileWriter(new File("log_func.txt")));
-			bw1 = new BufferedWriter(new FileWriter(new File("log_r.txt")));
-		}
-		catch (IOException e1)
-		{
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+//		try
+//		{
+//			bw = new BufferedWriter(new FileWriter(new File("log_func.txt")));
+//			bw1 = new BufferedWriter(new FileWriter(new File("log_r.txt")));
+//		}
+//		catch (IOException e1)
+//		{
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
 		
-		writeLog(getMinusF(f, x0, c), r);
+//		writeLog(getMinusF(f, x0, c), r);
 		
-		if(r == null)
-			return null;
+//		if(r == null)
+//			return null;
 		
 		while(Vector.oneNorm(r) > precision)
 		{
-			if(numIter >= maxIter)
+			if(numIter >= maxIter && printSolution)
 			{
 				log.info("Maximal number of iteration are reached.");
 				StringBuilder sb = new StringBuilder();
@@ -135,7 +139,7 @@ public class Newton
 				return bestSolution;
 			}
 			
-			if((numIter%logStep) == 0)
+			if((numIter%logStep) == 0 && printSolution)
 			{
 				log.info("----------------------------");
 				StringBuilder sb = new StringBuilder();
@@ -199,54 +203,56 @@ public class Newton
 				return null;
 			}
 			
-			writeLog(getMinusF(f, x0, c), r);
+//			writeLog(getMinusF(f, x0, c), r);
 			
 			numIter++;
 		}
+		
+		if(printSolution)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append("Found solution at x = ");
+			sb.append(Vector.asString(bestSolution));
+			sb.append(" after ");
+			sb.append(numIter);
+			sb.append(" iterations.");
 			
-		StringBuilder sb = new StringBuilder();
-		sb.append("Found solution at x = ");
-		sb.append(Vector.asString(bestSolution));
-		sb.append(" after ");
-		sb.append(numIter);
-		sb.append(" iterations.");
-		
-		log.info(sb.toString());
-		
-		sb.setLength(0);
-		
-		sb.append("r = ");
-		sb.append(Vector.asString(rMin));
-		
-		log.info(sb.toString());
-		
-		sb.setLength(0);
-		sb.append("f = ");
-		
-		double calcF[] = new double[f.length];
-		
-		for(int i=0;i<f.length-1;i++)
-		{
-			calcF[i] = f[i].getValue(x0, c);
+			log.info(sb.toString());
+			
+			sb.setLength(0);
+			
+			sb.append("r = ");
+			sb.append(Vector.asString(rMin));
+			
+			log.info(sb.toString());
+			
+			sb.setLength(0);
+			sb.append("f = ");
+			
+			double calcF[] = new double[f.length];
+			
+			for(int i=0;i<f.length-1;i++)
+			{
+				calcF[i] = f[i].getValue(x0, c);
+			}
+			
+			sb.append(Vector.asString(calcF));
+			
+			log.info(sb.toString());
+			
+	//		try
+	//		{
+	//			bw.flush();
+	//			bw.close();
+	//			bw1.flush();
+	//			bw1.close();
+	//		}
+	//		catch (IOException e)
+	//		{
+	//			// TODO Auto-generated catch block
+	//			e.printStackTrace();
+	//		}
 		}
-		
-		sb.append(Vector.asString(calcF));
-		
-		log.info(sb.toString());
-		
-		try
-		{
-			bw.flush();
-			bw.close();
-			bw1.flush();
-			bw1.close();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		
 		return bestSolution;
 	}

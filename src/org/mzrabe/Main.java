@@ -20,6 +20,7 @@ import org.knowm.xchart.XYChart;
 import org.knowm.xchart.XYChartBuilder;
 import org.knowm.xchart.style.Styler.ChartTheme;
 import org.knowm.xchart.style.markers.SeriesMarkers;
+import org.mzrabe.approximation.leastSquares;
 import org.mzrabe.diffquotient.JacobianMatrix;
 import org.mzrabe.lina.Function;
 import org.mzrabe.lina.MathOperation;
@@ -38,6 +39,7 @@ import org.mzrabe.opti.SimpleLocalNewton;
 import org.mzrabe.opti.SteamedLocalNewton;
 import org.mzrabe.plot.XYContourPlot;
 import org.mzrabe.plot.XYPlot;
+import org.mzrabe.utils.Util;
 import org.mzrabe.zeropoint.Newton;
 
 import static java.lang.System.out;
@@ -56,8 +58,164 @@ public class Main {
 		
 //		newtonTest();
 //		volumeCross();
-		LRTest();
+//		LRTest();
+//		approxTest();
+		aneometer();
 
+	}
+	
+	
+	/**
+	 * @throws Exception 
+	 * 
+	 */
+	private static void aneometer() throws Exception
+	{
+		double r0 = 0.022;
+		double r1 = 0.052;
+		double A0 = 0.024*0.002;
+		double A = Math.PI/4*Math.pow(0.036, 2);
+		double beta = 2./3*Math.PI;
+		double rho = 1.2;
+		double Mr = 0.00001;
+		
+		double[][] xi = {{1.42},{2.06},{2.53},{3.02},{3.55},{4.01},{4.54},{5.02},{5.55},{6.05},{6.54},{7.02},{8.05},{10},{12}};
+		double[] yi = {0.133,0.203,0.233,0.255,0.272,0.279,0.292,0.300,0.301,0.304,0.301,0.305,0.308,0.316,0.320};
+		
+		System.out.println(xi.length + ", " + yi.length);
+		
+		Function f_lambda = new Function()
+		{
+			
+			@Override
+			public double getValue(double[] x, double... c)
+			{
+				
+				return r1*(Fo(c[1], c[0], x[0], rho, A) +  Fo(c[1]+beta, c[0], x[0], rho, A) +  Fo(c[1]+2*beta, c[0],x[0], rho, A)) + r0*(F(c[1], c[0], x[0], rho, A0) +  F(c[1]+beta, c[0], x[0], rho, A0) +  F(c[1]+2*beta, c[0],x[0], rho, A0)) - c[2];
+			}
+		};
+		
+		double[] alpha = Util.range(0, Math.PI*2, 30*Math.PI/180);
+//		double[] alpha = {0*Math.PI/180};
+
+		Function approx =	new Function()
+			{
+				
+				@Override
+				public double getValue(double[] x, double... c)
+				{
+					double lambda = 0;
+					for(int i = 0;i<alpha.length;i++)
+					{
+					lambda += Newton.getSolution(new Function[]{f_lambda}, new double[]{0.1}, c[0], alpha[i],x[0])[0];
+//						System.out.println(String.format("%f", lambda[i]));
+					}
+					return lambda/alpha.length;
+				}
+		};
+		
+		double[] sol = leastSquares.approx(approx, new double[]{Mr}, yi, xi);
+		
+
+		
+		
+		double[] v = Util.range(0.01, 14, 0.1);
+		double[] y1 = new double[v.length];
+		for(int i = 0;i<v.length;i++)
+		{
+			double lambda = 0;
+			for(int j = 0;j<alpha.length;j++)
+			{
+			lambda += Newton.getSolution(new Function[]{f_lambda}, new double[]{0.1}, v[i], alpha[j],sol[0])[0];
+//				System.out.println(String.format("%f", lambda[i]));
+			}
+			lambda = lambda/alpha.length;
+			y1[i] = lambda;
+		}
+		
+		double[] vi = new double[xi.length];
+		for(int i=0;i<xi.length;i++)
+		{
+			vi[i] = xi[i][0];
+		}
+		Vector.print(sol);
+		XYPlot plot = new XYPlot("blub", "x", "y", 800, 600);
+		plot.chart.getStyler().setYAxisMin(0.);
+		plot.addDataSet("apprx", v, y1);
+		plot.addDataSet("measure", vi,yi);
+		plot.showChart();
+		
+	}
+	
+	private static double Fo(double angle, double v, double lambda, double rho, double A)
+	{
+		double c = (v * Math.signum(Math.round(Math.cos(angle)))) - lambda * v;
+		double cw = c > 0 ? 1.34 : 0.34;
+		double fo = rho/2 * cw * A * Math.pow(c, 2)*Math.signum(c);
+//		System.out.println(String.format("angle %f, cw %f, fo %f, v %f, c %f, lambda %f, v * Math.cos(angle) %.15f", Math.toDegrees(angle), cw, fo,v,c, lambda * v, v * Math.cos(angle)));
+		return fo;
+		
+	}
+	
+	private static double F(double angle, double v, double lambda, double rho, double A)
+	{
+		double c = (v * Math.signum(Math.round(Math.cos(angle)))) - lambda * v;
+		double cw = 1.2;
+		double fo = rho/2 * cw * A * Math.pow(c, 2)*Math.signum(c);
+//		System.out.println(String.format("angle %f, cw %f, fo %f, v %f, c %f, lambda %f, v * Math.cos(angle) %.15f", Math.toDegrees(angle), cw, fo,v,c, lambda * v, v * Math.cos(angle)));
+		return fo;
+		
+	}
+	
+
+
+	private static void approxTest() throws Exception
+	{
+		Function f = new Function()
+		{
+			
+			@Override
+			public double getValue(double[] x, double... c)
+			{
+				return x[1]*Math.sin(x[0]*c[0]);
+			}
+		};
+		
+		double[][] x = new double[100][1];
+		double[] xx = new double[100];
+		for(int i=0;i<x.length;i++)
+		{
+			x[i][0] = (double) i/10;
+			xx[i] = (double) i/10;
+		}
+		double[] y = new double[x.length];
+		for(int i=0;i<y.length;i++)
+		{
+			y[i] = f.getValue(new double[]{2,1},x[i]) + (-.2 + Math.random() * .4); 
+		}
+	
+		
+
+		
+		double[] c = leastSquares.approx(f, new double[]{2.3,1.2}, y, x);
+		System.out.println("------");
+		Vector.print(c);
+		
+		double[] y2 = new double[1000];
+		double[] x2 = new double[1000];
+		for(int i=0;i<1000;i++)
+		{
+			x2[i] = (double) i/100;
+		}
+		for(int i=0;i<y2.length;i++)
+		{
+			y2[i] = f.getValue(c, x2[i]);
+		}
+		
+		XYPlot plot = new XYPlot("test", "x", "y", 800, 600);
+		plot.addDataSet("sinRand", xx, y);
+		plot.addDataSet("sinApprox", x2, y2);
+		plot.showChart();
 	}
 	
 	private static void LRTest()

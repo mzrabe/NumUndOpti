@@ -623,7 +623,7 @@ public class Matrix {
 	public static double[] solveRMS(double[][] mat, double[] b)
 	{
 		/* LR-Zerlegung */
-		log.entry();
+//		log.entry();
 		
 		double[][] A = new double[mat.length][];
 		for(int i=0;i<mat.length;i++)
@@ -697,7 +697,7 @@ public class Matrix {
 		}
 		
 //		Vector.print(switchLog);
-		log.exit();
+//		log.exit();
 		return b;
 	}
 	
