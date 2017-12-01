@@ -60,11 +60,33 @@ public class Main {
 //		volumeCross();
 //		LRTest();
 //		approxTest();
-		aneometer();
+//		aneometer();
+//		contourplottest();
 
 	}
 	
 	
+	/**
+	 * 
+	 */
+	private static void contourplottest()
+	{
+		XYContourPlot plot = new XYContourPlot("Himmelblau", "x", "y", 800, 600, new Function()
+		{
+			
+			@Override
+			public double getValue(double[] x, double... c)
+			{
+				// TODO Auto-generated method stub
+				return pow(pow(x[0], 2) + x[1] - 11, 2) + pow(x[0] + pow(x[1], 2) - 7, 2);
+			}
+		}, -5, 5, 0.1, 20);
+		
+		plot.showChart();
+		
+	}
+
+
 	/**
 	 * @throws Exception 
 	 * 

@@ -146,6 +146,12 @@ public class XYContourPlot extends XYPlot
 		
 //		plotContour(X, Y, Z);
 	}
+	
+    public void addContour(double[] X, double[] Y, double[][] ZZ, Integer numberOfLines)
+    {
+    	chart.setContour(X, Y, ZZ,numberOfLines);
+    	
+    }
 
 //	private void plotContour(double[] X, double[] Y, double[][] Z)
 //	{

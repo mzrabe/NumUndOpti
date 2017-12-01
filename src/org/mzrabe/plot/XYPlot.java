@@ -93,14 +93,6 @@ public class XYPlot {
     	
     }
     
-    
-    
-    public void addContour(double[] X, double[] Y, double[][] ZZ, Integer numberOfLines)
-    {
-    	chart.setContour(X, Y, ZZ,numberOfLines);
-    	
-    }
-    
     public void showChart()
     {
         // Show it
