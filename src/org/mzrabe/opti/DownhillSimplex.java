@@ -3,6 +3,7 @@ package org.mzrabe.opti;
 import java.util.Arrays;
 import java.util.TreeMap;
 import org.mzrabe.lina.Function;
+import org.mzrabe.lina.Vector;
 
 import static org.mzrabe.lina.Vector.*;
 
@@ -40,6 +41,9 @@ public class DownhillSimplex extends OptiAlgorithm{
 	double alpha, beta, gamma;
 	double[] psi_, psiR;
 	
+	/** max distance for the random simplex */
+	double r = 1;
+	
 	/**
 	 * Initialize the downhill simplex algorithm of Nelder and Mead.
 	 * 
@@ -52,7 +56,7 @@ public class DownhillSimplex extends OptiAlgorithm{
 	 */
 	public DownhillSimplex(Function func,double tolerance, int maxNumIteration)
 	{
-		this(func, tolerance, maxNumIteration, 1.5, 0.9);
+		this(func, tolerance, maxNumIteration, 1, 0.5);
 	}
 	
 	
@@ -76,7 +80,7 @@ public class DownhillSimplex extends OptiAlgorithm{
 
 		
 		this.alpha = alpha;
-		this.beta = Math.max(alpha, 1);
+		this.beta = Math.max(alpha*1.5, 1);
 		this.gamma = gamma;
 		
 		log.debug("number of points: " + NPoints);
@@ -113,12 +117,12 @@ public class DownhillSimplex extends OptiAlgorithm{
 	}
 	
 	@Override
-	protected boolean isFinish()
+	protected boolean isFinish() throws Exception
 	{
 		return (calcAverage() < tolerance)  ? true : false;
 	}
 	
-	private double calcAverage()
+	private double calcAverage() throws Exception
 	{
 		double[] funcValues = new double[NPoints];
 		double sumFuncValue = 0;
@@ -144,8 +148,9 @@ public class DownhillSimplex extends OptiAlgorithm{
 	
 	/**
 	 * Resort the points. They will sorted ascending depending on the function values at this point.
+	 * @throws Exception 
 	 */
-	public void sortPoints()
+	public void sortPoints() throws Exception
 	{
 		double[] f = new double[points.length];
 		
@@ -190,25 +195,78 @@ public class DownhillSimplex extends OptiAlgorithm{
 	 *            - the start points for the downhill simplex algorithm, the
 	 *            number of points must be greater by 1 then the dimension of
 	 *            the points.
+	 * @throws Exception 
 	 */
 	@Override
-	protected void initAlgorithms(double[] ... x) {
+	protected void initAlgorithms(double[] ... x) throws Exception {
 		this.NPoints = x.length;
 		this.dimesion = x[FIRST_P].length;
-		this.LAST_P = NPoints -1;
+		
 		
 		/* the number of points must be greater than the dimension of the points by 1 */
 		if(NPoints != (dimesion+1))
 		{
-			throw new NumberFormatException("The number of points must be greater than the dimension of the points by 1.");
+			/* generate a simplex normal simplex witch x as center */
+			NPoints = dimesion+1;
+			points = new double[NPoints][dimesion];
+			int dim = dimesion;
+			
+			for(int i = 0; i<dimesion-1;i++)
+			{
+				if(i == 0)
+					points[i][i] = r;
+				else
+				{
+					double res = r*r;
+					for(int j = 0;j<=i;j++)
+					{
+						res -= Math.pow(points[i][j], 2); 
+					}
+					
+					points[i][i] = Math.sqrt(res);
+				}	
+				for(int j=i+1;j<points.length;j++)
+				{
+					points[j][i] = points[i][i]*-1./dim;
+				}
+				dim--;
+			}
+			
+			double res = r*r;
+			for(int j = 0;j<dimesion-1;j++)
+			{
+				res -= Math.pow(points[points.length-1][j], 2); 
+			}
+			
+			points[points.length-2][dimesion-1] = Math.sqrt(res);
+			points[points.length-1][dimesion-1] = -Math.sqrt(res);
+			
+			/* at least move the simplex center to x */
+			
+			for(double[] p : points)
+			{
+				Vector.add(p, x[0]);
+			}
+			
+			
+			StringBuilder sb = new StringBuilder("Generate start simplex : ");
+			for(double[] d : points)
+			{
+				sb.append(Vector.asString(d));
+				sb.append(" ");
+			}
+			log.info(sb.toString());
 		}
-		
-		points = new double[x.length][];
-		for(int i=0;i<x.length;i++)
+		else
 		{
-			points[i] = x[i].clone();
+			points = new double[x.length][];
+			for(int i=0;i<x.length;i++)
+			{
+				points[i] = x[i].clone();
+			}
 		}
 		
+		this.LAST_P = NPoints -1;
 		sortPoints();
 //		log.debug("start simplex : " + vectorsToString(points));
 		solution = this.getPsi_()/*points[FIRST_P]*/;
@@ -216,7 +274,7 @@ public class DownhillSimplex extends OptiAlgorithm{
 
 
 	@Override
-	protected void algorithms() {
+	protected void algorithms() throws Exception {
 		
 		
 		psi_ = getPsi_();
@@ -290,6 +348,33 @@ public class DownhillSimplex extends OptiAlgorithm{
 	public double[] getSolution()
 	{
 		return getPsi_();
+	}
+
+
+	/**
+	 * @return the {@link #r}
+	 */
+	public double getR()
+	{
+		return r;
+	}
+
+
+	/**
+	 * @param r the {@link #r} to set
+	 * @return - for chain setting
+	 */
+	public DownhillSimplex setR(double r)
+	{
+		if (r > 0)
+		{
+			this.r = r;
+			return this;
+		}
+		else
+		{
+			throw new IllegalArgumentException("The value 'r' have to be greater than 0. The value is " + r);
+		}
 	}
 	
 

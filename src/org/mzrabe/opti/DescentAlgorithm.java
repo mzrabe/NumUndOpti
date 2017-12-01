@@ -23,7 +23,7 @@ public class DescentAlgorithm {
 	private static StepStrategy step = new ArmijoStep();
 	public static ArrayList<double[]> solutionHistory = new ArrayList<>();
 	
-	public static double[] localNewton(Function f, double[] x)
+	public static double[] localNewton(Function f, double[] x) throws Exception
 	{
 		log.info("Start local newton optimization ...");
 		double[] solution = Arrays.copyOf(x,x.length);
@@ -49,7 +49,7 @@ public class DescentAlgorithm {
 		return solution;
 	}
 	
-	public static double[] simpleLocalNewton(Function f, double[] x)
+	public static double[] simpleLocalNewton(Function f, double[] x) throws Exception
 	{
 		log.info("Start simple newton optimization ...");
 		double[] solution = Arrays.copyOf(x,x.length);

@@ -15,7 +15,7 @@ public class XYPlot {
 	
 	public XYChart chart;
 	public SwingWrapper<XYChart> swingWrapper;
-	double Xmin, Xmax, Ymin, Ymax, Xstep, Ystep;
+	double Xmin = Double.NaN, Xmax = Double.NaN, Ymin = Double.NaN, Ymax = Double.NaN, Xstep = Double.NaN, Ystep = Double.NaN;
 	protected static final Logger log = LogManager.getRootLogger();
     
     public XYPlot(String title, String xLable, String yLable, int width, int height)
@@ -30,6 +30,16 @@ public class XYPlot {
     public XYPlot addDataSet(String title, double[] X, double[] Y)
     {
     	chart.addSeries(title, X, Y);
+    	
+    	if(Double.isNaN(Xmin) == false)
+			chart.getStyler().setXAxisMin(Xmin);
+    	if(Double.isNaN(Xmax) == false)
+		    chart.getStyler().setXAxisMax(Xmax);
+    	if(Double.isNaN(Ymin) == false)
+		    chart.getStyler().setYAxisMin(Ymin);
+    	if(Double.isNaN(Ymax) == false)
+		    chart.getStyler().setYAxisMax(Ymax);
+    	
     	return this;
     }
     public XYPlot addDataSet(String title,List<double[]> points)
@@ -46,10 +56,14 @@ public class XYPlot {
     	}
     	
     	chart.addSeries(title, X, Y);
-		chart.getStyler().setXAxisMin(Xmin);
-	    chart.getStyler().setXAxisMax(Xmax);
-	    chart.getStyler().setYAxisMin(Ymin);
-	    chart.getStyler().setYAxisMax(Ymax);
+    	if(Double.isNaN(Xmin) == false)
+			chart.getStyler().setXAxisMin(Xmin);
+    	if(Double.isNaN(Xmax) == false)
+		    chart.getStyler().setXAxisMax(Xmax);
+    	if(Double.isNaN(Ymin) == false)
+		    chart.getStyler().setYAxisMin(Ymin);
+    	if(Double.isNaN(Ymax) == false)
+		    chart.getStyler().setYAxisMax(Ymax);
     	return this;
     }
     
@@ -67,14 +81,20 @@ public class XYPlot {
     	}
     	
     	chart.updateXYSeries(title, X, Y,null);
-		chart.getStyler().setXAxisMin(Xmin);
-	    chart.getStyler().setXAxisMax(Xmax);
-	    chart.getStyler().setYAxisMin(Ymin);
-	    chart.getStyler().setYAxisMax(Ymax);
+		
+    	if(Double.isNaN(Xmin) == false)
+			chart.getStyler().setXAxisMin(Xmin);
+    	if(Double.isNaN(Xmax) == false)
+		    chart.getStyler().setXAxisMax(Xmax);
+    	if(Double.isNaN(Ymin) == false)
+		    chart.getStyler().setYAxisMin(Ymin);
+    	if(Double.isNaN(Ymax) == false)
+		    chart.getStyler().setYAxisMax(Ymax);
+    	
     	return this;
     }
     
-    public XYPlot addFunction(String title, Function f, double from_x, double to_x)
+    public XYPlot addFunction(String title, Function f, double from_x, double to_x) throws Exception
     {
     	double num = 10;
     	double step = (to_x-from_x)/ (num-1);
@@ -89,6 +109,14 @@ public class XYPlot {
     	}
     	
     	addDataSet(title, X, Y);
+    	if(Double.isNaN(Xmin) == false)
+			chart.getStyler().setXAxisMin(Xmin);
+    	if(Double.isNaN(Xmax) == false)
+		    chart.getStyler().setXAxisMax(Xmax);
+    	if(Double.isNaN(Ymin) == false)
+		    chart.getStyler().setYAxisMin(Ymin);
+    	if(Double.isNaN(Ymax) == false)
+		    chart.getStyler().setYAxisMax(Ymax);
     	return this;
     	
     }

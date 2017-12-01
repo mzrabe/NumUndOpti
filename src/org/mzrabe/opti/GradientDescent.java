@@ -53,13 +53,13 @@ public class GradientDescent extends OptiAlgorithm{
 	 * @see org.mzrabe.opti.OptiAlgorithm#algorithms()
 	 */
 	@Override
-	protected void algorithms() {
+	protected void algorithms() throws Exception {
 		
 		d = func.grad(solution, true);
 		d = Vector.multiScalar(d, step.getAlpha(func, d, solution));
 		solution = Vector.sum(solution, d);
 		
-		numberOfIterations++;
+//		numberOfIterations++;
 		
 	}
 	

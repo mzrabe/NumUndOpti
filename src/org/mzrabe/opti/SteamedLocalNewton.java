@@ -37,7 +37,7 @@ public class SteamedLocalNewton extends OptiAlgorithm {
 	 * @see org.mzrabe.opti.OptiAlgorithm#initAlgorithms()
 	 */
 	@Override
-	protected void initAlgorithms(double[] ... x) {
+	protected void initAlgorithms(double[] ... x) throws Exception {
 		if(x.length > 1)
 		{
 			log.warn("You entered more then one start point. The " + getName() + " algorithms only needs one. "
@@ -53,7 +53,7 @@ public class SteamedLocalNewton extends OptiAlgorithm {
 	 * @see org.mzrabe.opti.OptiAlgorithm#algorithms()
 	 */
 	@Override
-	protected void algorithms() {
+	protected void algorithms() throws Exception {
 		
 		d = Gauss.getSolution(func.getHf(solution), func.grad(solution,true), false);
 		log.debug("d = " +  Arrays.toString(d));
@@ -61,7 +61,7 @@ public class SteamedLocalNewton extends OptiAlgorithm {
 		log.debug("d * alpha= " +  Arrays.toString(d));
 		solution = Vector.sum(solution, d);
 		log.debug("x + d * alpha= " +  Arrays.toString(solution));
-		numberOfIterations++;
+//		numberOfIterations++;
 		
 	}
 	

@@ -60,7 +60,7 @@ public class GlobalNewton extends OptiAlgorithm {
 	 * @see org.mzrabe.opti.OptiAlgorithm#algorithms()
 	 */
 	@Override
-	protected void algorithms() {
+	protected void algorithms() throws Exception {
 		
 		d = Gauss.getSolution(func.getHf(solution), func.grad(solution,true), false);
 		

@@ -42,7 +42,7 @@ public class SimpleLocalNewton extends OptiAlgorithm{
 	 * @see org.mzrabe.opti.OptiAlgorithm#initAlgorithms()
 	 */
 	@Override
-	protected void initAlgorithms(double[] ... x) {
+	protected void initAlgorithms(double[] ... x) throws Exception {
 		if(x.length > 1)
 		{
 			log.warn("You entered more then one start point. The " + getName() + " algorithms only needs one. "
@@ -59,7 +59,7 @@ public class SimpleLocalNewton extends OptiAlgorithm{
 	 * @see org.mzrabe.opti.OptiAlgorithm#algorithms()
 	 */
 	@Override
-	protected void algorithms() {
+	protected void algorithms() throws Exception {
 		
 		d = Gauss.getSolution(localHess, func.grad(solution,true), false);
 		log.debug("d: " + Arrays.toString(d));

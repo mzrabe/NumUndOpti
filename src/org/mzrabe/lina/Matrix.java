@@ -623,7 +623,6 @@ public class Matrix {
 	public static double[] solveRMS(double[][] mat, double[] b)
 	{
 		/* LR-Zerlegung */
-//		log.entry();
 		
 		double[][] A = new double[mat.length][];
 		for(int i=0;i<mat.length;i++)
@@ -697,7 +696,6 @@ public class Matrix {
 		}
 		
 //		Vector.print(switchLog);
-//		log.exit();
 		return b;
 	}
 	
@@ -721,10 +719,8 @@ public class Matrix {
 		for(int k=0;k<A.length;k++)
 		{
 			if(A[k][k] <= 0)
-			{
 				log.info("Matrix is not positiv definit");
-				return null;
-			}
+
 			A[k][k] = Math.sqrt(A[k][k]);
 			
 			for(int i = k+1; i<A.length; i++)
@@ -761,4 +757,3 @@ public class Matrix {
 		return b;
 	}
 }
- 

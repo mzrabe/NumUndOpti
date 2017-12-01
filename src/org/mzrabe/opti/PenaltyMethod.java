@@ -22,6 +22,7 @@ public class PenaltyMethod extends OptiAlgorithm
 		/**
 		 * The mathematical operation to increase the penalty coefficient after violent the restriction.
 		 * @param penaltyCoefficient - the penaltyCoefficient to increase
+		 * @return 
 		 */
 		public double increase(double penaltyCoefficient);
 	}
@@ -72,8 +73,9 @@ public class PenaltyMethod extends OptiAlgorithm
 		 * @param x - the function arguments of the defined restriction function
 		 * @param c - a optional number of changeable coefficients of the defined restriction function
 		 * @return the function value of the restriction
+		 * @throws Exception 
 		 */
-		public Double getPenaltyValue(double[] x, double ... c )
+		public Double getPenaltyValue(double[] x, double ... c ) throws Exception
 		{
 			switch(this.type)
 			{
@@ -86,7 +88,8 @@ public class PenaltyMethod extends OptiAlgorithm
 					if(value > 0)
 					{
 						violent = true;
-						return Math.pow(restrictionDefinition.getValue(x, c), 2) * r;
+//						return -Math.log10(-value);
+						return Math.pow(value, 2) * r;
 					}
 					else
 					{
@@ -212,7 +215,7 @@ public class PenaltyMethod extends OptiAlgorithm
 		{
 
 			@Override
-			public double getValue(double[] x, double... c)
+			public double getValue(double[] x, double... c) throws Exception
 			{
 
 				double value = originFunction.getValue(x, c);
@@ -222,7 +225,6 @@ public class PenaltyMethod extends OptiAlgorithm
 				}
 				for(Restriction res : restrictions)
 				{
-//					log.trace("res : " +i);
 					value += res.getPenaltyValue(x, c);
 				}
 
@@ -235,7 +237,7 @@ public class PenaltyMethod extends OptiAlgorithm
 	}
 
 	@Override
-	protected void initAlgorithms(double[]... x)
+	protected void initAlgorithms(double[]... x) throws Exception
 	{
 //		if(optiAlgo instanceof DownhillSimplex)
 //		{
@@ -248,7 +250,7 @@ public class PenaltyMethod extends OptiAlgorithm
 		startSimplex = x;
 		addPointsToHistory(lastMin);
 		
-		log.debug("run with penalty coefficient(s) of : " + getPCO());
+		log.info("run with penalty coefficient(s) of : " + getPCO());
 		
 		try
 		{
@@ -264,25 +266,25 @@ public class PenaltyMethod extends OptiAlgorithm
 	}
 
 	@Override
-	protected void algorithms()
+	protected void algorithms() throws Exception
 	{
 		lastMin = Arrays.copyOf(solution, solution.length);
 		
-		log.debug("run with penalty coefficient(s) of : " + getPCO());
-		if(optiAlgo instanceof DownhillSimplex)
-		{
-			try
-			{
-				solution = optiAlgo.findMin(startSimplex);
-			}
-			catch (InterruptedException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		else
-		{
+		log.info("run with penalty coefficient(s) of : " + getPCO());
+//		if(optiAlgo instanceof DownhillSimplex)
+//		{
+//			try
+//			{
+//				solution = optiAlgo.findMin(startSimplex);
+//			}
+//			catch (InterruptedException e)
+//			{
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		else
+//		{
 			try
 			{
 				solution = optiAlgo.findMin(lastMin);
@@ -292,7 +294,7 @@ public class PenaltyMethod extends OptiAlgorithm
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
-		}
+//		}
 		
 		increasePenaltyCoefficients();
 		
@@ -352,10 +354,10 @@ public class PenaltyMethod extends OptiAlgorithm
 		String str = "[ ";
 		for(Restriction r : restrictions)
 		{
-			str+=r.r + " ";
+			str+=r.r + ", ";
 		}
 		
-		str+= "]";
+		str= str.substring(0, str.length()-2) + " ]";
 		return str;
 	}
 

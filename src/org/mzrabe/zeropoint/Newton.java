@@ -1,8 +1,6 @@
 package org.mzrabe.zeropoint;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -10,7 +8,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mzrabe.diffquotient.JacobianMatrix;
 import org.mzrabe.lina.Function;
-import org.mzrabe.lina.Gauss;
 import org.mzrabe.lina.Matrix;
 import org.mzrabe.lina.Vector;
 
@@ -21,30 +18,54 @@ import org.mzrabe.lina.Vector;
 public class Newton
 {
 	/** precision of the solution */
-	private static double precision = 0.00001;
+	private static double precision = 1e-5;
 	/** maximal number of iterations */
 	private static int maxIter = 1000;
 	/** iteration steps for logging */
-	private static int logStep = 1000;
+	private static int logStep = 50;
 //	/** the implemetation to get the Jacobian matrix */
 //	private JacobianMatrix j = new JacobianMatrix();
 	private static final Logger log = LogManager.getRootLogger();
-	/** best solution */
-	private static double[] bestSolution;
-	/** minimal residue */
-	private static double[] rMin;
-	/**
-	 * 
-	 */
-	public static boolean printSolution = false;
 	
 	private static BufferedWriter bw;
 	private static BufferedWriter bw1;
+	
+	
+	/**
+	 * @param f
+	 * @param x0
+	 * @param c
+	 * @return
+	 * @throws Exception 
+	 */
+	public static double[] newtonStep(Function[] f, double[] x0, double... c) throws Exception
+	{
+		double[][] j = JacobianMatrix.getJacobiMatrix(f, x0, c);
+		double[] mf = getMinusF(f, x0, c);
+//		double[] r = Gauss.getSolution(j, mf, false);
+		double[] r = Matrix.solveRMS(j, mf);
+		
+		return r;
+	}
+	
+	/**
+	 * See {@link Newton#getSolution(Function[], double[], double...)}
+	 * @param f - the function
+	 * @param printSolution - flag if the solution should print into the log
+	 * @param x - start point for the iteration
+	 * @param c - constant values of f
+	 * @return - the zero point of f
+	 * @throws Exception 
+	 */
+	public static double getSolution(Function f,boolean printSolution, double x, double ... c) throws Exception
+	{
+		return getSolution(new Function[]{f}, printSolution, new double[]{x}, c)[0];
+	}
 
 	/**
 	 * Approximate a solution of the equation system according to the newton
-	 * method.<br><br>
-	 * 
+	 * method.<br>
+	 * <br>
 	 * 
 	 * <math xmlns="http://www.w3.org/1998/Math/MathML" display="block"> <msub>
 	 * <mi>J</mi> <mi>f</mi> </msub> <mo stretchy="false">(</mo> <msup>
@@ -56,8 +77,8 @@ public class Newton
 	 * <mo>&#x2212;<!-- - --></mo> <msup> <mi>x</mi>
 	 * <mrow class="MJX-TeXAtom-ORD"> <mo stretchy="false">(</mo> <mi>n</mi>
 	 * <mo stretchy="false">)</mo> </mrow> </msup> <mo stretchy="false">)</mo>
-	 * <mo>=</mo> <mi> &#x2212; f </mi> <mo>(</mo> <msup>
-	 * <mi>x</mi> <mrow class="MJX-TeXAtom-ORD"> <mi>(n)</mi> </mrow> </msup>
+	 * <mo>=</mo> <mi> &#x2212; f </mi> <mo>(</mo> <msup> <mi>x</mi>
+	 * <mrow class="MJX-TeXAtom-ORD"> <mi>(n)</mi> </mrow> </msup>
 	 * <mo stretchy="false">)</mo> </math>
 	 * 
 	 * Its manly used for a non linear equation system. This method use the
@@ -69,21 +90,24 @@ public class Newton
 	 * 
 	 * @param f
 	 *            - a vectorial function or the equation system
+	 * @param printSolution
+	 *            - flag if the solution should print into the log
 	 * @param x0
 	 *            - the initial values for the Newton algorithms
-	 * @param c 
-	 * 			  - constant values in the vectorial function (f)
+	 * @param c
+	 *            - constant values in the vectorial function (f)
 	 * @return - a vector which solved the equation system
+	 * @throws Exception 
 	 */
-	public static double[] getSolution(Function[] f, double[] x0, double ... c)
+	public static double[] getSolution(Function[] f, boolean printSolution, double[] x0, double ... c) throws Exception
 	{
 		int numIter = 1;
 		double[][] j = JacobianMatrix.getJacobiMatrix(f, x0, c);
 		double[] mf = getMinusF(f, x0, c);
 //		double[] r = Gauss.getSolution(j, mf, false);
 		double[] r = Matrix.solveRMS(j, mf);
-		rMin = Arrays.copyOf(r, r.length);
-		bestSolution = Arrays.copyOf(x0, x0.length);
+		double[] rMin = Arrays.copyOf(r, r.length);
+		double[] bestSolution = Arrays.copyOf(x0, x0.length);
 		
 //		try
 //		{
@@ -98,43 +122,46 @@ public class Newton
 		
 //		writeLog(getMinusF(f, x0, c), r);
 		
-//		if(r == null)
-//			return null;
+		if(r == null)
+			return null;
 		
 		while(Vector.oneNorm(r) > precision)
 		{
-			if(numIter >= maxIter && printSolution)
+			if(numIter >= maxIter)
 			{
-				log.info("Maximal number of iteration are reached.");
-				StringBuilder sb = new StringBuilder();
-				sb.append("Found best solution at x = ");
-				sb.append(Vector.asString(bestSolution));
-				sb.append(" after ");
-				sb.append(numIter);
-				sb.append(" iterations.");
-				
-				log.info(sb.toString());
-				
-				sb.setLength(0);
-				
-				sb.append("r = ");
-				sb.append(Vector.asString(rMin));
-				
-				log.info(sb.toString());
-				
-				sb.setLength(0);
-				sb.append("f = ");
-				
-				double calcF[] = new double[f.length];
-				
-				for(int i=0;i<f.length-1;i++)
+				if(printSolution)
 				{
-					calcF[i] = f[i].getValue(x0, c);
+					log.info("Maximal number of iteration are reached.");
+					StringBuilder sb = new StringBuilder();
+					sb.append("Found best solution at x = ");
+					sb.append(Vector.asString(bestSolution));
+					sb.append(" after ");
+					sb.append(numIter);
+					sb.append(" iterations.");
+					
+					log.info(sb.toString());
+					
+					sb.setLength(0);
+					
+					sb.append("r = ");
+					sb.append(Vector.asString(rMin));
+					
+					log.info(sb.toString());
+					
+					sb.setLength(0);
+					sb.append("f = ");
+					
+					double calcF[] = new double[f.length];
+					
+					for(int i=0;i<f.length-1;i++)
+					{
+						calcF[i] = f[i].getValue(x0, c);
+					}
+					
+					sb.append(Vector.asString(calcF));
+					
+					log.info(sb.toString());
 				}
-				
-				sb.append(Vector.asString(calcF));
-				
-				log.info(sb.toString());
 				
 				return bestSolution;
 			}
@@ -207,7 +234,7 @@ public class Newton
 			
 			numIter++;
 		}
-		
+			
 		if(printSolution)
 		{
 			StringBuilder sb = new StringBuilder();
@@ -217,14 +244,14 @@ public class Newton
 			sb.append(numIter);
 			sb.append(" iterations.");
 			
-			log.info(sb.toString());
+			log.debug(sb.toString());
 			
 			sb.setLength(0);
 			
 			sb.append("r = ");
 			sb.append(Vector.asString(rMin));
 			
-			log.info(sb.toString());
+			log.debug(sb.toString());
 			
 			sb.setLength(0);
 			sb.append("f = ");
@@ -238,32 +265,41 @@ public class Newton
 			
 			sb.append(Vector.asString(calcF));
 			
-			log.info(sb.toString());
-			
-	//		try
-	//		{
-	//			bw.flush();
-	//			bw.close();
-	//			bw1.flush();
-	//			bw1.close();
-	//		}
-	//		catch (IOException e)
-	//		{
-	//			// TODO Auto-generated catch block
-	//			e.printStackTrace();
-	//		}
+			log.debug(sb.toString());
 		}
+		
+//		try
+//		{
+//			bw.flush();
+//			bw.close();
+//			bw1.flush();
+//			bw1.close();
+//		}
+//		catch (IOException e)
+//		{
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
 		
 		return bestSolution;
 	}
 	
-	private static double[] getMinusF(Function[] f, double[] x, double ... c)
+	public static double[] getMinusF(Function[] f, double[] x, double ... c) throws Exception
 	{
 		double[] mf = new double[f.length];
 		
 		for(int i=0;i<f.length;i++)
 		{
+//			try
+//			{
 			mf[i] = -f[i].getValue(x,c);
+//			}
+//			catch(IllegalArgumentException e)
+//			{
+//				System.out.println(String.format("Arguments of x=%s are not valide.", Vector.asString(x)));
+//				return null;
+//			}
 		}
 		
 		return mf;

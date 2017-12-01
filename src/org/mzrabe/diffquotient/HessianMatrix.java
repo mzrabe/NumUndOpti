@@ -22,10 +22,13 @@ public class HessianMatrix{
 		double[][] Hf = new double[x.length][x.length];
 		
 		for(int i=0;i<Hf.length;i++){
-			for(int j=0;j<Hf.length;j++){
+			for(int j=i;j<Hf.length;j++){
 				try {
 //					System.out.println(String.format("Zeile %d, Spalte %d = %f", i,j,D1f(x, i,j)));
 					Hf[i][j] = grad.df(f,x,c, i,j);
+					if(i != j)
+						/* according Schwarz */
+						Hf[j][i] = Hf[i][j];
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

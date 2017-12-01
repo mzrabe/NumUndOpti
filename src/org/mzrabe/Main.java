@@ -26,7 +26,7 @@ import org.mzrabe.lina.Function;
 import org.mzrabe.lina.MathOperation;
 import org.mzrabe.lina.Matrix;
 import org.mzrabe.lina.Vector;
-import org.mzrabe.methaheuristic.SimulatedAnnealing;
+import org.mzrabe.methaheuristic.SimulatedAnnealingTravelSalesMan;
 import org.mzrabe.methaheuristic.firefly.FireFlyAlgorithm;
 import org.mzrabe.opti.DownhillSimplex;
 import org.mzrabe.opti.ExactLineSearch;
@@ -52,6 +52,16 @@ public class Main {
 	static ArrayList<Double> AnzVelocity = new ArrayList<Double>();
 	static double[] x = { 1, 2, 3, 4 };
 	static double[] y = { 6.5, 10., 22., 59. };
+	
+	static Function himmelblau = new Function()
+	{
+		
+		@Override
+		public double getValue(double[] x, double... c) throws Exception
+		{
+			return pow(pow(x[0], 2) + x[1] - 11, 2) + pow(x[0] + pow(x[1], 2) - 7, 2);
+		}
+	};
 
 	public static void main(String[] args) throws Exception {
 		
@@ -60,16 +70,17 @@ public class Main {
 //		volumeCross();
 //		LRTest();
 //		approxTest();
-//		aneometer();
-//		contourplottest();
+		aneometer();
+		contourplottest();
 
 	}
 	
 	
 	/**
+	 * @throws Exception 
 	 * 
 	 */
-	private static void contourplottest()
+	private static void contourplottest() throws Exception
 	{
 		XYContourPlot plot = new XYContourPlot("Himmelblau", "x", "y", 800, 600, new Function()
 		{
@@ -124,12 +135,12 @@ public class Main {
 			{
 				
 				@Override
-				public double getValue(double[] x, double... c)
+				public double getValue(double[] x, double... c) throws Exception
 				{
 					double lambda = 0;
 					for(int i = 0;i<alpha.length;i++)
 					{
-					lambda += Newton.getSolution(new Function[]{f_lambda}, new double[]{0.1}, c[0], alpha[i],x[0])[0];
+					lambda += Newton.getSolution(f_lambda, false, 0.1, c[0], alpha[i],x[0]);
 //						System.out.println(String.format("%f", lambda[i]));
 					}
 					return lambda/alpha.length;
@@ -148,7 +159,7 @@ public class Main {
 			double lambda = 0;
 			for(int j = 0;j<alpha.length;j++)
 			{
-			lambda += Newton.getSolution(new Function[]{f_lambda}, new double[]{0.1}, v[i], alpha[j],sol[0])[0];
+			lambda += Newton.getSolution(f_lambda, true, 0.1, v[i], alpha[j],sol[0]);
 //				System.out.println(String.format("%f", lambda[i]));
 			}
 			lambda = lambda/alpha.length;
@@ -272,7 +283,7 @@ public class Main {
 	/**
 	 * Test um den Umfang einer Schnittlinie zu ermitteln. Hier wurde dies an zwei kreisen gemacht
 	 */
-	private static void volumeCross(){
+	private static void volumeCross() throws Exception{
 		
 		/** radius of the cylinder 1 */
 		double r1 = 4;
@@ -338,7 +349,7 @@ public class Main {
 		System.out.println(String.format("distance = %f", dist));
 	}
 	
-	private static void newtonTest()
+	private static void newtonTest() throws Exception
 	{
 		Function w1 = new Function()
 		{
@@ -364,13 +375,13 @@ public class Main {
 		System.out.println("Jacobi Matrix");
 		Matrix.printMatix(Matrix.trans(JacobianMatrix.getJacobiMatrix(f, new double[]{1,1,1})));
 		System.out.println("Solution Newton");
-		Vector.print(Newton.getSolution(f, new double[]{1,10}));
+		Vector.print(Newton.getSolution(f,true, new double[]{1,10}));
 		
 		
 		
 	}
 	
-	private static void optiTest() throws InterruptedException
+	private static void optiTest() throws Exception
 	{
 		java.util.function.Function<List<double[]>, Double> func = new java.util.function.Function<List<double[]>, Double>()
 		{
@@ -476,7 +487,7 @@ public class Main {
 //			System.out.println(String.format("points.add(new double[]{%f,%f});", x,y));
 //		}
 		
-		SimulatedAnnealing<double[],Double> travalSalesMan = new SimulatedAnnealing<double[], Double>(points,func);
+		SimulatedAnnealingTravelSalesMan<double[],Double> travalSalesMan = new SimulatedAnnealingTravelSalesMan<double[], Double>(points,func);
 		
 		/**
 		 * the seriesName of the yData
@@ -576,31 +587,7 @@ public class Main {
 //		
 		
 		
-		Function himmelblau = new Function() {
-
-			@Override
-			public double getValue(double[] x, double... s) {
-				return pow(pow(x[0], 2) + x[1] - 11, 2) + pow(x[0] + pow(x[1], 2) - 7, 2);
-			}
-		};
-
-		Function rosenbrock = new Function() {
-
-			@Override
-			public double getValue(double[] x, double... s) {
-				return 100. * pow((x[1] - pow(x[0], 2.)), 2.) + pow(1. - x[0], 2.);
-			}
-		};
 		
-		Function eggcrate = new Function() {
-
-			@Override
-			public double getValue(double[] x, double... s) {
-				double x1 = x[0];
-				double x2 = x[1];
-				return pow(x1,2)+pow(x2,2)+25*pow(Math.sin(x1),2)+25*pow(Math.sin(x2),2);
-			}
-		};
 
 		Function f1 = new Function() {
 
@@ -620,7 +607,7 @@ public class Main {
 			}
 		} ;
 		
-		MathOperation g1 = (x, s)  ->  x[0] + 2*x[1] - 3;
+		MathOperation g1 = (x, s)  ->  x[0] + 2*x[1] +1;
 		MathOperation g2= (x, s)  ->  -x[0] + x[1] - 2;
 		MathOperation h1 = (x, s)  ->  x[1]-1;
 		MathOperation test = new MathOperation()
@@ -635,9 +622,9 @@ public class Main {
 		};
 		
 		
-		PenaltyMethod penaltyMethod = new PenaltyMethod(f1,1e-8, 10, new LocalNewton(null, 1e-8, 1000))
-				.addRestriction(PenaltyMethod.RestrictionsType.INEQUALITY, 0,g1, ((r)  -> r+8. ))
-				.addRestriction(PenaltyMethod.RestrictionsType.INEQUALITY, 0,g2, ((r)  -> r+8. ));
+		PenaltyMethod penaltyMethod = new PenaltyMethod(himmelblau,1e-8, 10, new DownhillSimplex(null, 1e-8, 50))
+				.addRestriction(PenaltyMethod.RestrictionsType.INEQUALITY, 1e1,g1, ((r)  -> r*10. ))
+				.addRestriction(PenaltyMethod.RestrictionsType.INEQUALITY, 1e1,g2, ((r)  -> r*10. ));
 //				.addRestriction(PenaltyMethod.RestrictionsType.INEQUALITY, 5,(x,c) -> -x[0], ((r)  -> r+2. ))
 //				.addRestriction(PenaltyMethod.RestrictionsType.INEQUALITY, 5,(x,c) -> x[0]-1., ((r)  -> r+2. ))
 //				.addRestriction(PenaltyMethod.RestrictionsType.INEQUALITY, 5,(x,c) -> x[1]-1., ((r)  -> r+2. ))
@@ -645,22 +632,18 @@ public class Main {
 //				.addRestriction(PenaltyMethod.RestrictionsType.INEQUALITY, 1,g2, ((r)  -> r*50));
 //				.addRestriction(PenaltyMethod.RestrictionsType.EQUATION, 1,h1, ((r)  -> r+20));
 		
-//		OptiAlgorithm.plot = new XYContourPlot("Contour", "x1", "x2", 800, 600, penaltyMethod.getFunc(), -2, 3,0,4, 0.1, 100);
-////		plot.addDataSet("g1", Arrays.asList(new double[]{0,1},new double[]{0,-1}));
-////		plot.addDataSet("g2", Arrays.asList(new double[]{1,1},new double[]{1,-1}));
+		
+//	
+		penaltyMethod.findMin(new double[]{1,5});
+		penaltyMethod.showChart(-5, 5, -5, 5, 100, 20);
+//		
+//		OptiAlgorithm.plot = new XYContourPlot("Contour", "x1", "x2", 800, 600, penaltyMethod.getFunc(), -2, 3,0,4, 0.01, 25);
 //		OptiAlgorithm.plot.addDataSet("g1", Arrays.asList(new double[]{-2,0},new double[]{2,4}));
 //		OptiAlgorithm.plot.addDataSet("g2", Arrays.asList(new double[]{-2,2.5},new double[]{3,0}));
-//		
-//		penaltyMethod.findMin(new double[][]{{3,0},{2.5,0.5},{2.5,-0.5}});
-//		
+//		OptiAlgorithm.plot.addDataSet("steps",penaltyMethod.getHist());
 //		OptiAlgorithm.plot.showChart();
 		
-		FireFlyAlgorithm fireFlyAlgorithm = new FireFlyAlgorithm(rosenbrock, new double[][]{{-5,5},{-5,5}});
-		fireFlyAlgorithm.setPathToSave("/home/linux/Schreibtisch");
-		fireFlyAlgorithm.setNumberOfFlies(100);
-		fireFlyAlgorithm.setShouldPlot(false);
-		fireFlyAlgorithm.findMin();
-		fireFlyAlgorithm.printAllSolution();
+
 		
 	
 

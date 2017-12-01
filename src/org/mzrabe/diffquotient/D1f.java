@@ -45,7 +45,7 @@ public class D1f implements Gradient {
 	}
 
 	@Override
-	public double[] grad(Function func, double[] x, boolean negativ) {
+	public double[] grad(Function func, double[] x, boolean negativ) throws Exception {
 		double[] grad = new double[x.length];
 
 		for (int i = 0; i < grad.length; i++) {

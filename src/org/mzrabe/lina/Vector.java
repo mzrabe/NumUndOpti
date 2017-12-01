@@ -16,6 +16,13 @@ public class Vector {
 	/** the basis vector of the z-axes */
 	public static final double[] ZBASIS = {0,0,1};
 	
+	/** the negative basis vector of the x-axes */
+	public static final double[] nXBASIS = {-1,0,0};
+	/** the negative basis vector of the y-axes */
+	public static final double[] nYBASIS = {0,-1,0};
+	/** the negative basis vector of the z-axes */
+	public static final double[] nZBASIS = {0,0,-1};
+	
 	/**
 	 * Rotate the vector v counterclockwise around the x basis vector (x-axes) with the angle alpha, 
 	 * around the y-axis with the angle beta and around the z-axes with the angel gamma. 
@@ -312,7 +319,7 @@ public class Vector {
 	/**
 	 * Calculate the sum of the vectors
 	 * @param v - the given vectors
-	 * @return - the sum of all given vectors
+	 * @return - the sum of all given vectors, return a new instance of double[]
 	 */
 	public static double[] sum(double[]... v) {
 		double[] back = new double[v[0].length];
@@ -351,6 +358,9 @@ public class Vector {
 	public static double[] multiScalar(double[] x, double scalar)
 	{
 		double[] back = Arrays.copyOf(x, x.length);
+		
+		if(scalar == 1.0)
+			return back;
 		
 		for(int i=0;i<back.length;i++)
 		{
@@ -410,6 +420,10 @@ public class Vector {
 	 * @return - v as String
 	 */
 	public static String asString(double... v){
+		
+		if(v == null)
+			return "null";
+		
 		StringBuilder sb = new StringBuilder("[");
 		
 		for(int i=0;i<v.length-1;i++){
@@ -465,7 +479,7 @@ public class Vector {
 	}
 	
 	/**
-	 * Add the vector u to the vector v.
+	 * Add the vector u to the vector v. the vector v will changed
 	 * @param v - the vector v which will increase, this instance will changed
 	 * @param u - the vector u which will increase v
 	 */
@@ -499,5 +513,48 @@ public class Vector {
 			v[i] -= u[i];
 		}
 	}
+	
+	/**
+	 * @param v - one vector
+	 * @param u - another vector
+	 * @return - true if the vectors are equal, otherwise false (also if the vectors have not the same length)
+	 */
+	public static boolean equals(double[] v, double[] u)
+	{
+		if(v.length != u.length)
+			return false;
+		else
+			for(int i = 0;i<v.length;i++)
+			{
+				if(v[i] == u[i])
+					return true;
+			}
+		return false;
+	}
+	
+	/**
+	 * Calculate the surface of the of the polygon according the Gauss's area formula.
+	 * @param v - the points of the polygon ordered counterclockwise or clockwise - minimum 3 points
+	 * @return - the surface of the polygon, 0 if the number of points is lower than 3 or if the points have not the dimesion 2
+	 * 
+	 */
+	public static double getSurface(double[] ... v)
+	{
+		if(v.length < 3)
+			return 0;
+		if(v[0].length != 2)
+			return 0;
+		
+		double s = v[v.length-1][0] * v[0][1] - v[v.length-1][1] * v[0][0];
+		
+		for(int i = 0; i<v.length-1;i++)
+		{
+			s += v[i][0] * v[i+1][1] - v[i][1] * v[i+1][0];
+		}
+		
+		return Math.abs(s/2);
+		
+	}
+	
 
 }

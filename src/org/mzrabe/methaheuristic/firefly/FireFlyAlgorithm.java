@@ -24,6 +24,7 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	 * the list of the flys (agents)
 	 */
 	private List<Fly> flys = new ArrayList<>();
+	
 	/**
 	 * the function which reduce the intensity over the distance
 	 */
@@ -36,7 +37,7 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	/**
 	 * the factor for the random movement
 	 */
-	private double alpha = 0.1;
+	private double alpha = 0.05;
 	/**
 	 * the step length
 	 */
@@ -44,7 +45,7 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	/**
 	 * the factor to reduce the influence of the distance
 	 */
-	private static double gamma = 3;
+	private static double gamma = 1e6;
 	/**
 	 * the number of fireflies (agents or particle)
 	 */
@@ -60,11 +61,11 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	/**
 	 * the flag if the steps should plot
 	 */
-	private boolean shouldPlot = true;
+	private boolean shouldPlot = false;
 	/**
 	 * flag if the tail of the flies should plot
 	 */
-	private boolean plotTail = false;
+	private boolean plotTail = true;
 	/**
 	 * the path where the plot should saved. As default the plots will 
 	 * save in the working directory
@@ -75,7 +76,10 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	 * last global swarm counter
 	 */
 	private int lastSwarmCounter = 0;
-	
+	/**
+	 * formate for the plots
+	 */
+	private BitmapFormat plotFormat = BitmapFormat.PNG;
 	private HashSet<FlySwarm> swarms = new HashSet<>();
 	private int numberOfUnchangedIterations = 0;
 	private int periode = 15;
@@ -87,10 +91,11 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	 *            you have to multiplied the function by -1</i>)
 	 * @param range
 	 *            - the range in which the flies will placed randomly
+	 * @throws Exception 
 	 */
-	public FireFlyAlgorithm(Function func, double[][] range)
+	public FireFlyAlgorithm(Function func, double[][] range) throws Exception
 	{
-		this(func, getDefaultReduceIntensity(ReduceIntensityFunction.NONE), range);
+		this(func, getDefaultReduceIntensity(ReduceIntensityFunction.POTENZ), range);
 	}
 	
 	/**
@@ -103,8 +108,9 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	 *            over the distance
 	 * @param range
 	 *            - the range in which the flies will placed randomly
+	 * @throws Exception 
 	 */
-	public FireFlyAlgorithm(Function func,ReduceIntensity reduceIntensity, double[][] range)
+	public FireFlyAlgorithm(Function func,ReduceIntensity reduceIntensity, double[][] range) throws Exception
 	{
 		this(func, reduceIntensity, 480, range);
 	}
@@ -121,19 +127,14 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	 *            - the maximal number of iterations
 	 * @param range
 	 *            - the range in which the flies will placed randomly
+	 * @throws Exception 
 	 */
-	public FireFlyAlgorithm(Function func,ReduceIntensity reduceIntensity, int maxIterations,double[][] range)
+	public FireFlyAlgorithm(Function func,ReduceIntensity reduceIntensity, int maxIterations,double[][] range) throws Exception
 	{
 		super(func,0.09,maxIterations);
 		this.range = range;
 		this.reduceIntensity = reduceIntensity;
 		
-		if(range.length == 2 && shouldPlot)
-		{
-			chart = new XYContourPlot("FireFlyAlgorithm - Step 0", "x1", "x2", 800, 600, func, range[0][0], range[0][1], range[1][0], range[1][1], 0.1, 25);
-			chart.chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Scatter);
-		    chart.chart.getStyler().setMarkerSize(5);
-		}
 	}
 	
 	private int getDimension()
@@ -142,7 +143,7 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	}
 
 	@Override
-	protected void initAlgorithms(double[]... x)
+	protected void initAlgorithms(double[]... x) throws Exception
 	{
 		/* distribute the fireflies in the given range */
 		for(int i=0;i<numberOfFlies;i++)
@@ -159,8 +160,13 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 			flys.get(i).intensity = -func.getValue(flys.get(i).position);
 		}
 		
-		if (shouldPlot)
+		if (shouldPlot && range.length == 2)
 		{
+			
+			chart = new XYContourPlot("FireFlyAlgorithm - Step 0", "x1", "x2", 800, 600, func, range[0][0], range[0][1], range[1][0], range[1][1], 100,50);
+			chart.chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Scatter);
+		    chart.chart.getStyler().setMarkerSize(5);
+		    
 			dir = new File(pathToSave + "/FireFlyPlots");
 			if (!dir.exists())
 			{
@@ -171,7 +177,7 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 
 			try
 			{
-				BitmapEncoder.saveBitmap(chart.chart, new File(dir.getAbsolutePath() + String.format("/%1$03d_iteration", numberOfIterations)).getAbsolutePath(), BitmapFormat.JPG);
+				BitmapEncoder.saveBitmap(chart.chart, new File(dir.getAbsolutePath() + String.format("/%1$03d_iteration", numberOfIterations)).getAbsolutePath(), plotFormat);
 			}
 			catch (IOException e)
 			{
@@ -181,10 +187,11 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	}
 
 	@Override
-	protected void algorithms()
+	protected void algorithms() throws Exception
 	{
 		/* make a temporary copy of the current state */
 		ArrayList<Fly> copyFly = new ArrayList<>();
+//		bestFlys = new ArrayList<>();
 		
 		for (Fly f : flys)
 		{
@@ -235,10 +242,11 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 
 			/* generate a random step for the fly */
 			double[] random = new double[currentFly.position.length];
-
+			double r = Math.min(Math.abs(range[0][0]-range[0][1]), Math.abs(range[1][0]-range[1][1]));
 			for (int idxDim = 0; idxDim < random.length; idxDim++)
 			{
-				random[idxDim] = alpha * (-1+2 * Math.random());
+				
+				random[idxDim] = alpha * (-r/2 + r * Math.random());
 			}
 			
 			/* move the fly */
@@ -352,6 +360,18 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 			chart.chart.setTitle("FireFlyAlgorithm - Step " + numberOfIterations);
 			chart.updateDataSet(numberOfFlies + " Flies", getPositions(copyFly));
 			
+			
+			
+			if (chart.chart.getSeriesMap().get("best flies") == null)
+			{
+				chart.addDataSet("best flies", getBestPositions(copyFly));
+				chart.chart.getSeriesMap().get("best flies").setXYSeriesRenderStyle(XYSeriesRenderStyle.Scatter).setMarkerColor(Color.RED).setLineWidth(4.f).setShowInLegend(false);
+			}
+			else
+			{
+				chart.updateDataSet("best flies", getBestPositions(copyFly));
+			}
+			
 			/* plot the swarm path */
 			if(true)
 			{
@@ -430,7 +450,7 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 
 			try
 			{
-				BitmapEncoder.saveBitmap(chart.chart, new File(dir.getAbsolutePath() + String.format("/%1$03d_iteration", numberOfIterations)).getAbsolutePath(), BitmapFormat.JPG);
+				BitmapEncoder.saveBitmap(chart.chart, new File(dir.getAbsolutePath() + String.format("/%1$03d_iteration", numberOfIterations)).getAbsolutePath(), plotFormat);
 			}
 			catch (IOException e)
 			{
@@ -489,7 +509,7 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 	}
 
 	@Override
-	public double[] getSolution()
+	public double[] getSolution() throws Exception
 	{
 		/* find the swarm with the best solution */
 		
@@ -517,7 +537,7 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 			{
 				s = Vector.sum(s, f.position);
 			}
-			s = Vector.multiScalar(s, (double) 1. / flys.size());
+			s = Vector.multiScalar(s, 1. / flys.size());
 			
 			return s;
 		}
@@ -624,6 +644,20 @@ public class FireFlyAlgorithm extends OptiAlgorithm
 		for(Fly f : flies)
 		{
 			list.add(f.position);
+		}
+		return list;
+	}
+	
+	/**
+	 * Get the positions of the best flies as ArrayList
+	 */
+	public List<double[]> getBestPositions(List<Fly> flies)
+	{
+		ArrayList<double[]> list = new ArrayList<>();
+		for(Fly f : flies)
+		{
+			if(f.follows == null)
+				list.add(f.position);
 		}
 		return list;
 	}

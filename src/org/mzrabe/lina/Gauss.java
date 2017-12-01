@@ -16,11 +16,11 @@ public class Gauss {
 	 * Gauss-Jordan-Algorithmus nur fuer eindeutige Gleichungssysteme geeignet
 	 * (andernfalls wird NULL zurueckgegeben) matrix[row][column]
 	 * @param givenMatrix - the matrix of the linear equation system, coefficient matrix
-	 * @param vector - the constances of the system
+	 * @param givenVector - the constances of the system
 	 * @param printSteps - if the step of the algorithms should print to System.out
 	 * @return - the solution vector
 	 */
-	public static double[] getSolution(double[][] givenMatrix, double[] vector, boolean printSteps) {
+	public static double[] getSolution(double[][] givenMatrix, double[] givenVector, boolean printSteps) {
 		
 		//make a copy of the matrix
 		double[][] matrix = new double[givenMatrix.length][];
@@ -28,6 +28,8 @@ public class Gauss {
 		{
 			matrix[i] = Arrays.copyOf(givenMatrix[i],givenMatrix[i].length);
 		}
+		//make a copy of the vector
+		double[] vector = Arrays.copyOf(givenVector, givenVector.length);
 		
 		// Das Gleichungssystem hat keine eindeutige Loesung!
 		if (matrix.length < matrix[0].length) {

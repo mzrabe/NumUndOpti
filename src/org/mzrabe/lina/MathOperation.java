@@ -14,7 +14,8 @@ public interface MathOperation
 	 * @param x - the argument of the function
 	 * @param c - a number of coefficients (optional)
 	 * @return - the value of the function at x
+	 * @throws Exception 
 	 */
-	public abstract double getValue(double[] x,double ... c);
+	public abstract double getValue(double[] x,double ... c) throws Exception;
 
 }

@@ -49,7 +49,7 @@ public class JacobianMatrix
 	 * @param c - constances of the function
 	 * @return - the Jacobian matrix of f at x
 	 */
-	public static double[][] getJacobiMatrix(Function[] f, double[] x, double[] c)
+	public static double[][] getJacobiMatrix(Function[] f, double[] x, double[] c) throws Exception
 	{
 		double[][] jm = new double[f.length][x.length];
 		
@@ -57,15 +57,7 @@ public class JacobianMatrix
 		{
 			for(int j=0;j<x.length;j++)
 			{
-				try
-				{
-					jm[i][j] = grad.df(f[i], x, c, j);
-				}
-				catch (Exception e)
-				{
-					jm[i][j] = 0.0;
-					e.printStackTrace();
-				}
+				jm[i][j] = grad.df(f[i], x, c, j);
 			}
 		}
 		
@@ -78,7 +70,7 @@ public class JacobianMatrix
 	 * @param x - the point 
 	 * @return - the Jacobian matrix of f at x
 	 */
-	public static double[][] getJacobiMatrix(Function[] f, double[] x)
+	public static double[][] getJacobiMatrix(Function[] f, double[] x) throws Exception
 	{
 		return getJacobiMatrix(f, x, null);
 	}

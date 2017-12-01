@@ -1,14 +1,18 @@
 package org.mzrabe.plot;
 
 import org.mzrabe.lina.Function;
+import org.mzrabe.lina.MathOperation;
 
 public class XYContourPlot extends XYPlot
 {
-
-	Function func;
+	
+	MathOperation func;
 	private int numberContourLines;
-
-	public XYContourPlot(String title, String xLable, String yLable, int width, int height, Function func, double XYmin, double XYmax, double step, int LNum)
+	
+	private double maxContourValue = Double.MAX_VALUE;
+	private double minContourValue = -Double.MAX_VALUE;
+	
+	public XYContourPlot(String title, String xLable, String yLable, int width, int height, MathOperation func, double XYmin, double XYmax, double step, int LNum) throws Exception
 	{
 		super(title, xLable, yLable, width, height);
 		this.func = func;
@@ -24,7 +28,7 @@ public class XYContourPlot extends XYPlot
 
 	}
 
-	public XYContourPlot(String title, String xLable, String yLable, int width, int height, Function func, double Xmin, double Xmax, double Ymin, double Ymax, double step, int LNum)
+	public XYContourPlot(String title, String xLable, String yLable, int width, int height, MathOperation func, double Xmin, double Xmax, double Ymin, double Ymax, double step, int LNum) throws Exception
 	{
 		super(title, xLable, yLable, width, height);
 		this.func = func;
@@ -40,7 +44,54 @@ public class XYContourPlot extends XYPlot
 
 	}
 	
-	public XYContourPlot(String title, String xLable, String yLable, int width, int height, int LNum, double[] X, double[] Y, double[][] Z)
+	public XYContourPlot(String title, String xLable, String yLable, int width, int height, MathOperation func, double Xmin, double Xmax, double Ymin, double Ymax, int stepPoints, int LNum) throws Exception
+	{
+		super(title, xLable, yLable, width, height);
+		this.func = func;
+		this.Xmin = Xmin;
+		this.Xmax = Xmax;
+		this.Ymin = Ymin;
+		this.Ymax = Ymax;
+		this.Xstep = Math.abs(Xmin-Xmax) / stepPoints;
+		this.Ystep = Math.abs(Ymin-Ymax) / stepPoints;
+		this.numberContourLines = LNum;
+
+		initContour();
+
+	}
+	
+	public XYContourPlot(String title, String xLable, String yLable, int width, int height, MathOperation func, double Xmin, double Xmax, double Ymin, double Ymax, int stepPoints, int LNum, double LMax) throws Exception
+	{
+		super(title, xLable, yLable, width, height);
+		this.func = func;
+		this.Xmin = Xmin;
+		this.Xmax = Xmax;
+		this.Ymin = Ymin;
+		this.Ymax = Ymax;
+		this.Xstep = Math.abs(Xmin-Xmax) / stepPoints;
+		this.Ystep = Math.abs(Ymin-Ymax) / stepPoints;
+		this.numberContourLines = LNum;
+		this.setMaxContourValue(LMax);
+
+		initContour();
+
+	}
+	
+	/**
+	 * Get a new instance of a xy-plot with contour lines. 
+	 * 
+	 * @param title - the title of the plot
+	 * @param xLable - description of the x label
+	 * @param yLable - desctription of the y label
+	 * @param width - the width of the chart in pixel
+	 * @param height - the height of the chart in pixel
+	 * @param LNum - number of contour lines
+	 * @param X - the x values
+	 * @param Y - the y values
+	 * @param Z - the z values as 2D array <br> [<br>[f(x[0],y[0]), ... ,f(x[0],y[-1])]<br> , ... , <br>[f(x[-1],y[0]), ... , f(x[-1],y[-1])]<br>]  
+	 * @throws IllegalAccessException
+	 */
+	public XYContourPlot(String title, String xLable, String yLable, int width, int height, int LNum, double[] X, double[] Y, double[][] Z) throws IllegalAccessException
 	{
 		super(title, xLable, yLable, width, height);
 		this.numberContourLines = LNum;
@@ -53,7 +104,7 @@ public class XYContourPlot extends XYPlot
 		this.Ymin = yMinMax[0];
 		this.Ymax = yMinMax[1];
 		
-		addContour(X, Y, Z,LNum);
+		addContour(X, Y, Z,LNum, getMinContourValue(), getMaxContourValue());
 	}
 	
 	private double[] findMinMax(double[] values)
@@ -77,12 +128,12 @@ public class XYContourPlot extends XYPlot
 		chart.getContourData().setContourLineValues(contourLines);
 	}
 	
-	public void updateContour()
+	public void updateContour() throws Exception
 	{
 		initContour();
 	}
 
-	private void initContour()
+	private void initContour() throws Exception
 	{
 		double Xrange = Xmax - Xmin;
 		double Yrange = Ymax - Ymin;
@@ -113,11 +164,11 @@ public class XYContourPlot extends XYPlot
 
 		log.debug("Yresidue: " + residue);
 
-		log.debug("Xnum: " + ((Xmax - Xmin) / Xstep + 1));
-		log.debug("Ynum: " + ((Ymax - Ymin) / Xstep + 1));
+		log.debug("Xnum: " + (Math.abs(Xmax - Xmin) / Xstep + 1));
+		log.debug("Ynum: " + (Math.abs(Ymax - Ymin) / Ystep + 1));
 
-		int XNum = (int) ((Xmax - Xmin) / Xstep + 1);
-		int YNum = (int) ((Ymax - Ymin) / Xstep + 1);
+		int XNum = (int) (Math.abs(Xmax - Xmin) / Xstep + 1);
+		int YNum = (int) (Math.abs(Ymax - Ymin) / Ystep + 1);
 
 		double[][] Z = new double[XNum][YNum];
 		double[] X = new double[XNum];
@@ -132,24 +183,43 @@ public class XYContourPlot extends XYPlot
 		{
 			Y[i] = Ymin + i * Ystep;
 		}
+		
+		double validMaxValue = Double.MIN_VALUE;
 
 		for (int i = 0; i < Z.length; i++)
 		{
 			for (int j = 0; j < Z[i].length; j++)
 			{
-				Z[i][j] = func.getValue(new double[] { X[i], Y[j] });
+//				System.out.println(String.format("------------[%f,%f]-------------", X[i],Y[j]));
+				double z = func.getValue(new double[] { X[i], Y[j] });
+				
+				if(Double.isNaN(z))
+					z = 0;
+				if(Double.isInfinite(z))
+					z = Double.MAX_VALUE;
+				
+				Z[i][j] = z;
 			}
 
 		}
 		
-		addContour(X, Y, Z,numberContourLines);
+		addContour(X, Y, Z,numberContourLines, getMinContourValue(), getMaxContourValue());
 		
 //		plotContour(X, Y, Z);
 	}
 	
-    public void addContour(double[] X, double[] Y, double[][] ZZ, Integer numberOfLines)
+	/**
+	 * @param X - the x values
+	 * @param Y - the y values
+	 * @param ZZ - the z values
+	 * @param numberOfLines - the number of contour lines
+	 * @param minContourValue - minimal contour value
+	 * @param maxContourValue - maximum contour value
+	 * @throws IllegalAccessException - if the minimal contour line value is greater than the maximum contour line value
+	 */
+    public void addContour(double[] X, double[] Y, double[][] ZZ, Integer numberOfLines, double minContourValue, double maxContourValue) throws IllegalAccessException
     {
-    	chart.setContour(X, Y, ZZ,numberOfLines);
+    	chart.setContour(X, Y, ZZ,numberOfLines, minContourValue, maxContourValue);
     	
     }
 
@@ -240,11 +310,46 @@ public class XYContourPlot extends XYPlot
 	
 	/**
 	 * Set the number of the contour Lines and update the ContourData of the chart.
+	 * @throws Exception 
 	 */
-	public void setNumberOfContourLines( int numberContourLines )
+	public void setNumberOfContourLines( int numberContourLines ) throws Exception
 	{
 		this.numberContourLines = numberContourLines;
 		initContour();
+	}
+	
+	/**
+	 * Get the maximum contour value.
+	 * @return - maximum contour value
+	 */
+	public double getMaxContourValue()
+	{
+		return maxContourValue;
+	}
+	/**
+	 * Set a maximum contour value to visualize a interested region better
+	 * @param maxContourValue - the maximal value
+	 */
+	public void setMaxContourValue(double maxContourValue)
+	{
+		this.maxContourValue = maxContourValue;
+	}
+	
+	/**
+	 * Get the minimum contour value.
+	 * @return - minimum contour value
+	 */
+	public double getMinContourValue()
+	{
+		return minContourValue;
+	}
+	/**
+	 * Set a minimum contour value to visualize a interested region better
+	 * @param minContourValue - the maximal value
+	 */
+	public void setMinContourValue(double minContourValue)
+	{
+		this.minContourValue = minContourValue;
 	}
 
 }

@@ -3,10 +3,12 @@ package org.mzrabe.opti;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mzrabe.lina.Function;
+import org.mzrabe.lina.Vector;
 import org.mzrabe.plot.XYContourPlot;
 import org.mzrabe.plot.XYPlot;
 
@@ -18,7 +20,7 @@ import org.mzrabe.plot.XYPlot;
 public abstract class OptiAlgorithm {
 
 	
-	protected static final Logger log = LogManager.getRootLogger();
+	protected static final Logger log = LogManager.getLogger("OptiAlgo");
 	/**
 	 * the tolerance for algorithm
 	 */
@@ -48,7 +50,7 @@ public abstract class OptiAlgorithm {
 	 */
 	protected double[] solution;
 	
-	public static XYContourPlot plot; 
+	public XYContourPlot plot; 
 	
 	/**
 	 * empty Constructor
@@ -96,19 +98,22 @@ public abstract class OptiAlgorithm {
 	/**
 	 * Init the all needed parameter for the optimization algorithms
 	 * @param x - the start point(s)
+	 * @throws Exception 
 	 */
-	protected abstract void initAlgorithms(double[] ... x);
+	protected abstract void initAlgorithms(double[] ... x) throws Exception;
 	/**
 	 * Define the optimization algorithms which will run until the method {@link #isFinish()} returns true.
+	 * @throws Exception 
 	 */
-	protected abstract void algorithms();
+	protected abstract void algorithms() throws Exception;
 	
 	/**
 	 * Find the minimum of the given Function
+	 * @param x 
 	 * @return the solution of the optimization algorithms as point of type double[]
-	 * @throws InterruptedException 
+	 * @throws Exception 
 	 */
-	public double[] findMin(double[] ... x) throws InterruptedException {
+	public double[] findMin(double[] ... x) throws Exception {
 		hist.clear();
 		log.info("Start "+getName()+" optimization ...");
 		Date startTime = new Date();
@@ -135,7 +140,18 @@ public abstract class OptiAlgorithm {
 		if(numberOfIterations >= maxNumIterations)
 			log.warn("The maximal number of iterations was reached.");
 		log.info(getName() + " algorithms found minimum after "+numberOfIterations+" iterations at " + Arrays.toString(getSolution()));
-		log.info("Elapsed time in milliseconds: " + (endTime.getTime()-startTime.getTime())+ "\n");
+		long time = (endTime.getTime()-startTime.getTime());
+		
+		
+		long ms = time % 1000;
+		time = (time - ms)/1000;
+		long s = time % 60; 
+		time = (time - s)/60;
+		long min = time % 60;
+		time = (time - min)/60;
+		long h = time;
+		
+		log.info(String.format(Locale.ENGLISH, "Elapsed time %d h, %d min, %d s and %d ms (%d ms)", h,min,s,ms,(endTime.getTime()-startTime.getTime())));
 		
 		
 		return getSolution();
@@ -144,12 +160,14 @@ public abstract class OptiAlgorithm {
 	/**
 	 * Checks if the tolerance of the maximal number of iterations is reached.
 	 * @return true if the tolerance of the maximal number of iterations is reached otherwise false
+	 * @throws Exception 
 	 */
-	protected abstract boolean isFinish();
+	protected abstract boolean isFinish() throws Exception;
 	/**
 	 * Get the Solution
+	 * @throws Exception 
 	 */
-	public abstract double[] getSolution();
+	public abstract double[] getSolution() throws Exception;
 	
 	/**
 	 * Get the name of the algorithms
@@ -244,6 +262,30 @@ public abstract class OptiAlgorithm {
 		this.func = func;
 		
 	}
+	
+	public void showChart(double minX, double maxX, double minY, double maxY, int step, int lines)
+	{
+		
+		try
+		{
+			if(getSolution().length == 2)
+			{
+				plot = new XYContourPlot("Solution Plot - " +  getName() + ", x= " + Vector.asString(getSolution()), "x1", "x2", 800, 600, getFunc(), minX, maxX, minY, maxY, step, lines);
+				plot.addDataSet("solution steps", getHist());
+				plot.addDataSet("solution", Arrays.asList(getSolution()));
+				plot.showChart();
+			}
+			else
+			{
+				
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	
 	
 }

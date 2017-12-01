@@ -28,7 +28,7 @@ public class ArmijoStep implements StepStrategy {
 	}
 	
 	@Override
-	public double getAlpha(Function f, double[] d, double[] x, double ... c) {
+	public double getAlpha(Function f, double[] d, double[] x, double ... c) throws Exception {
 		
 		double alpha = 1;
 		int numIteration = 1;
