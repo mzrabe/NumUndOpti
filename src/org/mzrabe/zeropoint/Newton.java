@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mzrabe.diffquotient.JacobianMatrix;
 import org.mzrabe.lina.Function;
+import org.mzrabe.lina.Gauss;
 import org.mzrabe.lina.Matrix;
 import org.mzrabe.lina.Vector;
 
@@ -23,27 +24,23 @@ public class Newton
 	private static int maxIter = 1000;
 	/** iteration steps for logging */
 	private static int logStep = 50;
-//	/** the implemetation to get the Jacobian matrix */
-//	private JacobianMatrix j = new JacobianMatrix();
 	private static final Logger log = LogManager.getRootLogger();
-	
-	private static BufferedWriter bw;
-	private static BufferedWriter bw1;
 	
 	
 	/**
-	 * @param f
-	 * @param x0
-	 * @param c
-	 * @return
-	 * @throws Exception 
+	 * This method performs a single Newton step.
+	 * 
+	 * @param f - a multidimensional function f(x,c) = {f<sub>1</sub>, f<sub>2</sub>, ... , f<sub>n</sub>}
+	 * @param x0 - start parameter for the newton iteration
+	 * @param c - constant values of the function f(x,c)
+	 * @return - the correction vector r = x<sup>i+1</sup> - x<sup>i</sup>
+	 * @throws Exception if the 
 	 */
 	public static double[] newtonStep(Function[] f, double[] x0, double... c) throws Exception
 	{
 		double[][] j = JacobianMatrix.getJacobiMatrix(f, x0, c);
 		double[] mf = getMinusF(f, x0, c);
-//		double[] r = Gauss.getSolution(j, mf, false);
-		double[] r = Matrix.solveRMS(j, mf);
+		double[] r = Gauss.getSolution(j, mf, false);
 		
 		return r;
 	}
@@ -104,23 +101,9 @@ public class Newton
 		int numIter = 1;
 		double[][] j = JacobianMatrix.getJacobiMatrix(f, x0, c);
 		double[] mf = getMinusF(f, x0, c);
-//		double[] r = Gauss.getSolution(j, mf, false);
-		double[] r = Matrix.solveRMS(j, mf);
+		double[] r = Gauss.getSolution(j, mf, false);
 		double[] rMin = Arrays.copyOf(r, r.length);
 		double[] bestSolution = Arrays.copyOf(x0, x0.length);
-		
-//		try
-//		{
-//			bw = new BufferedWriter(new FileWriter(new File("log_func.txt")));
-//			bw1 = new BufferedWriter(new FileWriter(new File("log_r.txt")));
-//		}
-//		catch (IOException e1)
-//		{
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-		
-//		writeLog(getMinusF(f, x0, c), r);
 		
 		if(r == null)
 			return null;
@@ -200,11 +183,6 @@ public class Newton
 				log.info(sb.toString());
 				
 			}
-//			
-//			Vector.print(r);
-//			Vector.print(x0);
-//			Vector.print(getMinusF(f, x0, c));
-//			System.out.println("--------------");
 			
 			Vector.add(x0, r);
 			
@@ -213,8 +191,7 @@ public class Newton
 			
 			j = JacobianMatrix.getJacobiMatrix(f, x0, c);
 			mf = getMinusF(f, x0, c);
-//			r = Gauss.getSolution(j, mf, false);
-			r = Matrix.solveRMS(j, mf);
+			r = Gauss.getSolution(j, mf, false);
 			
 			if( Vector.oneNorm(r) < Vector.oneNorm(rMin))
 			{
@@ -229,8 +206,6 @@ public class Newton
 				log.info("Linear equation system cannot solved. r is null");
 				return null;
 			}
-			
-//			writeLog(getMinusF(f, x0, c), r);
 			
 			numIter++;
 		}
@@ -268,66 +243,27 @@ public class Newton
 			log.debug(sb.toString());
 		}
 		
-//		try
-//		{
-//			bw.flush();
-//			bw.close();
-//			bw1.flush();
-//			bw1.close();
-//		}
-//		catch (IOException e)
-//		{
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
 		
 		return bestSolution;
 	}
 	
+	/**
+	 * @param f - the function vector f(x,c) = {f<sub>1</sub>, f<sub>2</sub>, ... , f<sub>n</sub>}
+	 * @param x - the argument vector x
+	 * @param c - constant values of f(x,c)
+	 * @return - the negative solution of the function array f with arguments x and c
+	 * @throws Exception if a calculation of f<sub>i</sub>(x,c) fails
+	 */
 	public static double[] getMinusF(Function[] f, double[] x, double ... c) throws Exception
 	{
 		double[] mf = new double[f.length];
 		
 		for(int i=0;i<f.length;i++)
 		{
-//			try
-//			{
 			mf[i] = -f[i].getValue(x,c);
-//			}
-//			catch(IllegalArgumentException e)
-//			{
-//				System.out.println(String.format("Arguments of x=%s are not valide.", Vector.asString(x)));
-//				return null;
-//			}
 		}
 		
 		return mf;
-	}
-	
-	private static void writeLog(double[] mf, double[] r)
-	{
-		try
-		{
-			for(double d : mf)
-			{
-				bw.write(String.valueOf(-d)+",");
-			}
-			bw.write("\n");
-			bw.flush();
-			
-			for(double d : r)
-			{
-				bw1.write(String.valueOf(Math.abs(d))+",");
-			}
-			bw1.write("\n");
-			bw1.flush();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	

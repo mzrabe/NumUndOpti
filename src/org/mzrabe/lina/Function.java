@@ -78,6 +78,25 @@ public abstract class Function implements MathOperation{
 		grad.setDh(dh);
 	}
 	
+	/**
+	 * Method which calculate the solution of the equation system.
+	 * @param f - equation system
+	 * @param x - arguments of f
+	 * @param c - constant arguments of f
+	 * @return - the solution of f(x,c) as double[] array
+	 * @throws Exception - if a calculation of a value f<sub>i</sub>(x,c) fails
+	 *
+	 */
+	public static double[] getValues(Function[] f, double[] x, double ... c) throws Exception
+	{
+		double[] back = new double[f.length];
+		for(int i=0;i<f.length;i++)
+		{
+			back[i] = f[i].getValue(x, c);
+		}
+		return back;
+	}
+	
 	public double integrate(double[] from, double[] to, double ... c) throws Exception
 	{
 
