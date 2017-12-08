@@ -511,6 +511,26 @@ public class Matrix {
 	}
 	
 	/**
+	 * @param A - matrix to print
+	 * @return - matrix as String
+	 */
+	public static String matixAsString(double[][] A)
+	{	
+
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<A.length;i++)
+		{
+			sb.append("|");
+			for (int j=0;j<A[0].length-1;j++)
+			{
+				sb.append(String.format(Locale.ENGLISH,"%9f, ", A[i][j]));
+			}
+			sb.append(String.format(Locale.ENGLISH,"%9f |\n", A[i][A[0].length-1]));
+		}
+		return sb.toString();
+	}
+	
+	/**
 	 * Solve the linear equation system with the Gauss elimination and the relative column maximum strategy.
 	 * Source: Schwarz2006 - Numerische Mathematik
 	 * @param mat - the matrix

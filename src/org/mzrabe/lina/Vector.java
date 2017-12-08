@@ -353,7 +353,7 @@ public class Vector {
 	 * Calculate the scalar multiplication of a vector with a scalar
 	 * @param x - the vector
 	 * @param scalar - the scalar
-	 * @return - the result of the scalar multiplication - a vector
+	 * @return - the result of the scalar multiplication - a new double[] array
 	 */
 	public static double[] multiScalar(double[] x, double scalar)
 	{
@@ -526,10 +526,25 @@ public class Vector {
 		else
 			for(int i = 0;i<v.length;i++)
 			{
-				if(v[i] == u[i])
-					return true;
+				if(v[i] != u[i])
+					return false;
 			}
-		return false;
+		return true;
+	}
+	
+	/**
+	 * Checks if the two vector have the same direction
+	 * @param v - a vector
+	 * @param u - another vector 
+	 * @return  - true if the vectors have the same direction
+	 * 
+	 */
+	public static boolean directonEquals(double[] v, double[] u )
+	{
+		if(v.length != u.length)
+			return false;
+		else
+			return equals(getNormVector(v), getNormVector(u));
 	}
 	
 	/**
