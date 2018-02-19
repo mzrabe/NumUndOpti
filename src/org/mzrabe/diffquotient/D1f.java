@@ -6,7 +6,7 @@ import org.mzrabe.lina.Function;
 
 public class D1f implements Gradient {
 
-	private double dh = 1e-6;
+	private double dh = 1e-1;
 	
 	public D1f(){};
 	public D1f(double dh)

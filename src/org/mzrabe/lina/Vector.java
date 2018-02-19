@@ -63,6 +63,12 @@ public class Vector {
 			return rotateYAxis(v, phi);
 		if(r[0] == ZBASIS[0] && r[1] == ZBASIS[1] && r[2] == ZBASIS[2])
 			return rotateZAxis(v, phi);
+		if(r[0] == nXBASIS[0] && r[1] == nXBASIS[1] && r[2] == nXBASIS[2])
+			return rotateXAxis(v, -phi);
+		if(r[0] == nYBASIS[0] && r[1] == nYBASIS[1] && r[2] == nYBASIS[2])
+			return rotateYAxis(v, -phi);
+		if(r[0] == nZBASIS[0] && r[1] == nZBASIS[1] && r[2] == nZBASIS[2])
+			return rotateZAxis(v, -phi);
 
 		double[] back;
 		
@@ -88,6 +94,14 @@ public class Vector {
 	 */
 	public static double[] rotate(double[] v, double[] P1, double[] dir, double phi)
 	{
+		if(P1[0] == 0 && P1[1] == 0 && P1[2] == 0)
+			/* rotation axis goes through the origin */
+			return rotate(v, dir, phi);
+		
+		double[] back = Arrays.copyOf(v, v.length);
+		
+		/* rotation axis must goes to the origin */
+		subtract(back, P1);
 		
 		double[] axes = dir;
 		
@@ -95,23 +109,35 @@ public class Vector {
 			throw new IllegalArgumentException("The vector [0,0,0]^T is not a direction!");
 		
 		double[] r = getNormVector(axes);
-
-		double[] back;
 		
-//		double alpha = Math.acos(r[2]);
-//		double gamma = (r[0] == 0 && r[1] == 0) ? 0 : Math.asin(r[0]/Math.sqrt(r[0]*r[0]+r[1]*r[1]));
+		if(r[0] == XBASIS[0] && r[1] == XBASIS[1] && r[2] == XBASIS[2])
+			back = rotateXAxis(back, phi);
+		else if(r[0] == YBASIS[0] && r[1] == YBASIS[1] && r[2] == YBASIS[2])
+			back = rotateYAxis(back, phi);
+		else if(r[0] == ZBASIS[0] && r[1] == ZBASIS[1] && r[2] == ZBASIS[2])
+			back = rotateZAxis(back, phi);
+		else if(r[0] == nXBASIS[0] && r[1] == nXBASIS[1] && r[2] == nXBASIS[2])
+			back = rotateXAxis(back, -phi);
+		else if(r[0] == nYBASIS[0] && r[1] == nYBASIS[1] && r[2] == nYBASIS[2])
+			back = rotateYAxis(back, -phi);
+		else if(r[0] == nZBASIS[0] && r[1] == nZBASIS[1] && r[2] == nZBASIS[2])
+			back = rotateZAxis(back, -phi);
+		else
+		{
+//			double alpha = Math.acos(r[2]);
+//			double gamma = (r[0] == 0 && r[1] == 0) ? 0 : Math.asin(r[0]/Math.sqrt(r[0]*r[0]+r[1]*r[1]));
+			
+			/* rotate the rotation axes into the y-z area */
+			double gamma = (r[0] == 0 && r[1] == 0) ? 0 : angleRightHandRule(new double[]{r[0],r[1],0},YBASIS,ZBASIS);
+			/* rotate the rotation axes to the z axes */
+			double alpha =  angleRightHandRule(new double[]{0,r[1],r[2]},ZBASIS,XBASIS);
+			
+			double[][] RxRz = Matrix.multi(Matrix.getRx(alpha), Matrix.getRz(gamma));
+			
+			back = Matrix.multi(Matrix.trans(RxRz), Matrix.multi(Matrix.getRz(phi), Matrix.multi(RxRz, back)));
+		}
 		
-		double gamma = angleRightHandRule(new double[]{r[0],r[1],0},YBASIS,ZBASIS);
-		double alpha = angleRightHandRule(new double[]{0,r[1],r[2]},ZBASIS,XBASIS);
-		
-		double[][] RxRz = Matrix.multi(Matrix.getRx(alpha), Matrix.getRz(gamma));
-		double[] t1 = minus(v, P1);
-		double[] t2 = Matrix.multi(RxRz, minus(v, P1));
-		double[] t3 =  Matrix.multi(Matrix.getRz(phi), Matrix.multi(RxRz, minus(v, P1)));
-		double[] t4 = Matrix.multi(Matrix.trans(RxRz), Matrix.multi(Matrix.getRz(phi), Matrix.multi(RxRz, minus(v, P1))));
-		double[] t5 = sum(P1,Matrix.multi(Matrix.trans(RxRz), Matrix.multi(Matrix.getRz(phi), Matrix.multi(RxRz, minus(v, P1)))));
-		
-		back = sum(P1,Matrix.multi(Matrix.trans(RxRz), Matrix.multi(Matrix.getRz(phi), Matrix.multi(RxRz, minus(v, P1)))));
+		add(back, P1);
 		
 		return back;
 		
@@ -314,6 +340,41 @@ public class Vector {
 		return negative * Math.asin(normVxU/(normV * normU));
 	}
 	
+	/** 
+	 * Get the angle between these to vector (form -180 to 180 degree). 
+	 * This calculation base on the vector product so you get the smallest angel to rotate the vector v in the direction of u 
+	 * by using the right hand rule around the given rotation axes. The angle is return in radiant.
+	 * @param v - the one vector
+	 * @param u - the other vector
+	 * @param rotationAxes - the wanted rotation axes, you have to be sure that the vector product of v and u is collinear to the rotationAxes
+	 * @return - the angle between the vectors in radiant, if the rotationAxes shows in the opposite direction of the vector product of u and v the angel will be negative
+	 * 
+	 */
+	public static double angleBetween(double[] v, double[] u)
+	{
+		
+		//FIXME noch nich fertig
+		
+		double[] vxu = vectorProdukt(v, u);
+		
+		double normV = twoNorm(v);
+		double normU = twoNorm(u);
+		if(normV == 0)
+			throw new IllegalArgumentException("The length (Euclidean norm) of v has to be greater than zero.");
+		if(normU == 0)
+			throw new IllegalArgumentException("The length (Euclidean norm) of u has to be greater than zero.");
+		
+		double normVxU = twoNorm(vxu);
+		
+		double[] rotationAxisToXYPlane = Vector.vectorProdukt(vxu, Vector.ZBASIS);
+		double rotationAngleToZAxes = angleRightHandRule(vxu,Vector.ZBASIS,rotationAxisToXYPlane);
+		
+		double[] v_ = rotate(v, rotationAxisToXYPlane, rotationAngleToZAxes);
+		double[] u_ = rotate(u, rotationAxisToXYPlane, rotationAngleToZAxes);
+		
+		return Math.asin(normVxU/(normV * normU));
+	}
+	
 	
 
 	/**
@@ -437,7 +498,7 @@ public class Vector {
 	 * Calculate subtraction of two vectors
 	 * @param a - the one vector
 	 * @param b - the other vector
-	 * @return - the result of the subtraction
+	 * @return - the result of the subtraction, new instance of a double[]
 	 */
 	public static double[] minus(double[] a, double[] b)
 	{
@@ -517,17 +578,26 @@ public class Vector {
 	/**
 	 * @param v - one vector
 	 * @param u - another vector
+	 * @param ablsolute - true if only the absolute values should compare
 	 * @return - true if the vectors are equal, otherwise false (also if the vectors have not the same length)
 	 */
-	public static boolean equals(double[] v, double[] u)
+	public static boolean equals(double[] v, double[] u, boolean ablsolute)
 	{
 		if(v.length != u.length)
 			return false;
 		else
 			for(int i = 0;i<v.length;i++)
 			{
-				if(v[i] != u[i])
-					return false;
+				if(ablsolute)
+				{
+					if(Math.abs(v[i]) != Math.abs(u[i]))
+						return false;
+				}
+				else
+				{
+					if(v[i] != u[i])
+						return false;
+				}
 			}
 		return true;
 	}
@@ -536,15 +606,16 @@ public class Vector {
 	 * Checks if the two vector have the same direction
 	 * @param v - a vector
 	 * @param u - another vector 
+	 * @param absolute - if flag is true, than v equals u or v equals -u
 	 * @return  - true if the vectors have the same direction
 	 * 
 	 */
-	public static boolean directonEquals(double[] v, double[] u )
+	public static boolean directonEquals(double[] v, double[] u, boolean absolute)
 	{
 		if(v.length != u.length)
 			return false;
 		else
-			return equals(getNormVector(v), getNormVector(u));
+			return equals(getNormVector(v), getNormVector(u),absolute);
 	}
 	
 	/**
@@ -569,6 +640,39 @@ public class Vector {
 		
 		return Math.abs(s/2);
 		
+	}
+	
+	public static double[] connectVector(double[] ... v)
+	{
+		int lenght = 0;
+		for(double[] d : v)
+			lenght+=d.length;
+		double[] back = new double[lenght];
+		lenght = 0;
+		for(double[] d : v)
+		{
+			for(double x : d)
+			{
+				back[lenght] = x;
+				lenght++;
+			}
+		}
+		return back;
+	}
+
+	/**
+	 * @param c - a vector
+	 * @return - the absolute vector, this mean all values of the vector convert to a absolute value
+	 */
+	public static double[] abs(double[] c)
+	{
+		double[] back = new double[c.length];
+		
+		for(int i = 0; i<back.length; i++)
+		{
+			back[i] = Math.abs(c[i]);
+		}
+		return back;
 	}
 	
 

@@ -19,11 +19,11 @@ import org.mzrabe.lina.Vector;
 public class Newton
 {
 	/** precision of the solution */
-	private static double precision = 1e-5;
+	public static double precision = 1e-5;
 	/** maximal number of iterations */
-	private static int maxIter = 1000;
+	public static int maxIter = 1000;
 	/** iteration steps for logging */
-	private static int logStep = 50;
+	public static int logStep = 50;
 	private static final Logger log = LogManager.getRootLogger();
 	
 	
@@ -77,7 +77,7 @@ public class Newton
 	 * <mo>=</mo> <mi> &#x2212; f </mi> <mo>(</mo> <msup> <mi>x</mi>
 	 * <mrow class="MJX-TeXAtom-ORD"> <mi>(n)</mi> </mrow> </msup>
 	 * <mo stretchy="false">)</mo> </math>
-	 * 
+	 * <br>
 	 * Its manly used for a non linear equation system. This method use the
 	 * Gauss-Jordan algorithms to solve the linear equation system of one
 	 * iteration. If this linear equation system cannot solved null will

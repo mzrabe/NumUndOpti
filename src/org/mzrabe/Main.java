@@ -41,7 +41,6 @@ import org.mzrabe.plot.XYContourPlot;
 import org.mzrabe.plot.XYPlot;
 import org.mzrabe.utils.Util;
 import org.mzrabe.zeropoint.Newton;
-import org.mzrabe.zeropoint.SingleStepProcess;
 
 import static java.lang.System.out;
 
@@ -73,47 +72,47 @@ public class Main {
 //		approxTest();
 //		aneometer();
 //		contourplottest();
-		singleStepProcessTest();
+//		singleStepProcessTest();
 
 	}
 	
 	
-	/**
-	 * @throws Exception 
-	 * 
-	 */
-	private static void singleStepProcessTest() throws Exception
-	{
-		Function[] f = 
-			{
-					new Function()
-					{
-						
-						@Override
-						public double getValue(double[] x, double... c) throws Exception
-						{
-							return x[0]*x[0] + x[1] * x[1] + 0.6*x[1]-0.16;
-						}
-					},
-					new Function()
-					{
-						
-						@Override
-						public double getValue(double[] x, double... c) throws Exception
-						{
-							return x[0]*x[0]-x[1]*x[1]+x[0]-1.6 * x[1] - 0.14;
-						}
-					}
-			};
-		double[] x0 = {0.1,0.6};
-		double[] newtonSolution = Newton.getSolution(f, false, Arrays.copyOf(x0, x0.length));
-		double[] sspSolution = SingleStepProcess.getSolution(f, false, x0);
-		Vector.print(newtonSolution);
-		System.out.println(String.format("test %s", Vector.asString((Function.getValues(f,newtonSolution)))));
-		Vector.print(sspSolution);
-		System.out.println(String.format("test %s", Vector.asString((Function.getValues(f,sspSolution)))));
-		
-	}
+//	/**
+//	 * @throws Exception 
+//	 * 
+//	 */
+//	private static void singleStepProcessTest() throws Exception
+//	{
+//		Function[] f = 
+//			{
+//					new Function()
+//					{
+//						
+//						@Override
+//						public double getValue(double[] x, double... c) throws Exception
+//						{
+//							return x[0]*x[0] + x[1] * x[1] + 0.6*x[1]-0.16;
+//						}
+//					},
+//					new Function()
+//					{
+//						
+//						@Override
+//						public double getValue(double[] x, double... c) throws Exception
+//						{
+//							return x[0]*x[0]-x[1]*x[1]+x[0]-1.6 * x[1] - 0.14;
+//						}
+//					}
+//			};
+//		double[] x0 = {0.1,0.6};
+//		double[] newtonSolution = Newton.getSolution(f, false, Arrays.copyOf(x0, x0.length));
+//		double[] sspSolution = SingleStepProcess.getSolution(f, false, x0);
+//		Vector.print(newtonSolution);
+//		System.out.println(String.format("test %s", Vector.asString((Function.getValues(f,newtonSolution)))));
+//		Vector.print(sspSolution);
+//		System.out.println(String.format("test %s", Vector.asString((Function.getValues(f,sspSolution)))));
+//		
+//	}
 
 
 	/**
@@ -128,7 +127,6 @@ public class Main {
 			@Override
 			public double getValue(double[] x, double... c)
 			{
-				// TODO Auto-generated method stub
 				return pow(pow(x[0], 2) + x[1] - 11, 2) + pow(x[0] + pow(x[1], 2) - 7, 2);
 			}
 		}, -5, 5, 0.1, 20);
@@ -656,7 +654,6 @@ public class Main {
 			@Override
 			public double getValue(double[] x, double... c)
 			{
-				// TODO Auto-generated method stub
 				return 04+5;
 			}
 		};
