@@ -804,33 +804,38 @@ public class Matrix {
 	// function for finding rank of matrix
 	public static int rankOfMatrix(double mat[][])
 	{
-
-		int rank = mat[0].length;
+		double[][] A = new double[mat.length][];
+		/* make a copy of mat */
+		for(int i = 0; i<A.length;i++)
+		{
+			A[i] = Arrays.copyOf(mat[i], mat[i].length);
+		}
+		int rank = A[0].length;
 
 		for (int row = 0; row < rank; row++)
 		{
 
 			// Before we visit current row
 			// 'row', we make sure that
-			// mat[row][0],....mat[row][row-1]
+			// A[row][0],....A[row][row-1]
 			// are 0.
 
 			// Diagonal element is not zero
-			if (mat[row][row] != 0)
+			if (A[row][row] != 0)
 			{
-				for (int col = 0; col < mat.length; col++)
+				for (int col = 0; col < A.length; col++)
 				{
 					if (col != row)
 					{
 						// This makes all entries
 						// of current column
 						// as 0 except entry
-						// 'mat[row][row]'
-						double mult = (double) mat[col][row] / mat[row][row];
+						// 'A[row][row]'
+						double mult = (double) A[col][row] / A[row][row];
 
 						for (int i = 0; i < rank; i++)
 
-							mat[col][i] -= mult * mat[row][i];
+							A[col][i] -= mult * A[row][i];
 					}
 				}
 			}
@@ -842,7 +847,7 @@ public class Matrix {
 			// this row with that row and process
 			// that row
 			// 2) If all elements in current
-			// column below mat[r][row] are 0,
+			// column below A[r][row] are 0,
 			// then remvoe this column by
 			// swapping it with last column and
 			// reducing number of columns by 1.
@@ -852,13 +857,13 @@ public class Matrix {
 
 				// Find the non-zero element
 				// in current column
-				for (int i = row + 1; i < mat.length; i++)
+				for (int i = row + 1; i < A.length; i++)
 				{
 					// Swap the row with non-zero
 					// element with this row.
-					if (mat[i][row] != 0)
+					if (A[i][row] != 0)
 					{
-						swap(mat, row, i, rank);
+						swap(A, row, i, rank);
 						reduce = false;
 						break;
 					}
@@ -874,8 +879,8 @@ public class Matrix {
 					rank--;
 
 					// Copy the last column here
-					for (int i = 0; i < mat.length; i++)
-						mat[i][row] = mat[i][rank];
+					for (int i = 0; i < A.length; i++)
+						A[i][row] = A[i][rank];
 				}
 
 				// Process this row again
@@ -883,7 +888,7 @@ public class Matrix {
 			}
 
 			// Uncomment these lines to see
-			// intermediate results display(mat, R, C);
+			// intermediate results display(A, R, C);
 			// printf("\n");
 		}
 
