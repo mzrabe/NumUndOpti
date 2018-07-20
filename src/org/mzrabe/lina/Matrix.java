@@ -6,6 +6,9 @@ import java.util.Locale;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.mzrabe.lina.Gauss.InfinitySolutionsException;
+import org.mzrabe.lina.Gauss.NoSolutionException;
+
 
 /**
  * 
@@ -800,8 +803,43 @@ public class Matrix {
 			System.out.print("\n");
 		}
 	}
+	
+	/**
+	 * Function for finding rank of coefficient vector matrix.
+	 * This code is contributed by Anant Agarwal
+	 * @param mat - matrix
+	 * @param vector - vector
+	 * @return - rank of the given coefficient vector matrix
+	 * @author Anant Agarwal
+	 */
+	public static int rankOfMatrix(double mat[][], double[] vector)
+	{
+		if(mat.length != vector.length)
+			throw new IllegalArgumentException("Matrix and Vector must have the same number of lines.");
+		
+		double[][] A = new double[mat.length][mat[0].length+1];
+		
+		for(int i = 0;i<A.length;i++)
+		{
+			for(int j = 0; j<A[0].length;j++)
+			{
+				if(j==A[0].length-1)
+					A[i][j] = vector[j];
+				else
+					A[i][j] = mat[i][j];
+			}
+		}
+		
+		return rankOfMatrix(A);
+	}
 
-	// function for finding rank of matrix
+	/**
+	 * Function for finding rank of matrix.
+	 * This code is contributed by Anant Agarwal
+	 * @param mat - matrix
+	 * @return - rank of the given matrix
+	 * @author Anant Agarwal
+	 */
 	public static int rankOfMatrix(double mat[][])
 	{
 		double[][] A = new double[mat.length][];
@@ -894,6 +932,117 @@ public class Matrix {
 
 		return rank;
 	}
-
-	// This code is contributed by Anant Agarwal.
+	
+	/**
+	 * Solve the linear system of equations taking into account the known variables.
+	 * @param A - coefficient maxtrix
+	 * @param b - right hand vector of the linear system
+	 * @param x - solution vector, unknown variables setted as Double.NaN otherwise the known value. <br><b>NOTE! The solution will save into this double array.</b>
+	 * @return - the solution of the linear system of equations
+	 * @throws InfinitySolutionsException 
+	 * @throws NoSolutionException 
+	 */
+	public static double[] solveLinearSystem(double[][] A, double[] b, double[] x) throws NoSolutionException, InfinitySolutionsException
+	{	
+		/* at first count the known variables of x */
+		
+		int known_x = 0;
+		
+		for(int i = 0; i<x.length;i++)
+		{
+			if(!Double.isNaN(x[i]))
+				known_x++;
+		}
+		
+		/* check if it is possible to solve the linear system of equation */
+		
+		if(A.length < x.length - known_x)
+			throw new IllegalArgumentException("The number of equations ("+A.length+") is not greather than the number of unknown variables ("+(x.length - known_x)+"). Can't solve the linear system of equation.");
+			
+		/* Now reduce the linear equation system according to the
+		 * fix property nodes.
+		 */
+		
+		int i_ = 0,j_ = 0;
+		double[][] A_ = new double[A.length][x.length - known_x];
+		double[] b_ = new double[A.length];
+		
+		for(int i = 0;i<A.length;i++)
+		{
+//			if(i==A_.length)
+//				break;
+			
+			b_[i_] = b[i];
+			j_ = 0;
+			for(int j = 0;j<A[0].length;j++)
+			{
+				if(!Double.isNaN(x[j]))
+				{
+					b_[i_] -= A[i][j] * x[j];
+					continue;
+				}
+				
+				A_[i_][j_] = A[i][j];
+				j_++;
+			}
+			i_++;
+		}
+		
+		/* count zero lines */
+		ArrayList<Integer> zero = new ArrayList<>();
+		for(int i = 0; i<A_.length;i++)
+		{
+			if(b_[i] == 0)
+			{
+				double sum = 0;
+				for(int j = 0;j<A_[0].length;j++)
+				{
+					sum+=Math.abs(A_[i][j]);
+				}
+				if(sum == 0.0)
+					zero.add(i);
+			}
+		}
+		
+		int rankAb = rankOfMatrix(A_, b_);
+		int rankA = rankOfMatrix(A_); 
+		
+//		if(rankAb != rankA)
+//			throw new Gauss().new NoSolutionException("No solution.");
+		
+		double[][] A_final = new double[rankA][A_[0].length];
+		double[]   b_final = new double[rankA];
+		
+		i_ = 0;
+		for(int i = 0; i<A_.length;i++)
+		{
+			if(i_ == A_final.length)
+				break;
+			
+			if(!zero.contains(i))
+			{
+				for(int j = 0;j<A_[0].length;j++)
+				{
+					A_final[i_][j]=A_[i][j];
+				}
+				
+				b_final[i_] = b_[i];
+				i_++;
+			}
+		}
+		
+		double[] x_ = Gauss.getSolution(A_final, b_final, false);
+		
+		i_ = 0;
+		for(int i = 0;i<x.length;i++)
+		{
+			if(Double.isNaN(x[i]))
+			{
+				x[i] = x_[i_];
+				i_++;
+			}
+		}
+		
+		return x;
+	}
 }

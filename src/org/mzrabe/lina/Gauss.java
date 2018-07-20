@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 public class Gauss {
 	
 	private static final Logger log = LogManager.getRootLogger();
+	private static Gauss instance = new Gauss();
 
 	/**
 	 * Gauss-Jordan-Algorithmus nur fuer eindeutige Gleichungssysteme geeignet
@@ -19,8 +20,10 @@ public class Gauss {
 	 * @param givenVector - the constances of the system
 	 * @param printSteps - if the step of the algorithms should print to System.out
 	 * @return - the solution vector
+	 * @throws InfinitySolutionsException - if the linear system of equations has infinity solutions
+	 * @throws NoSolutionException - if the linear system of equations has no solution
 	 */
-	public static double[] getSolution(double[][] givenMatrix, double[] givenVector, boolean printSteps) {
+	public static double[] getSolution(double[][] givenMatrix, double[] givenVector, boolean printSteps) throws NoSolutionException, InfinitySolutionsException {
 		
 		//make a copy of the matrix
 		double[][] matrix = new double[givenMatrix.length][];
@@ -73,7 +76,7 @@ public class Gauss {
 						}
 
 						log.info("Gleichungssystem besitzt keine Loesung!");
-						return null;
+						throw instance.new NoSolutionException("System of linear equations has no solutions.");
 					}
 				}
 				// Nullzeile(n) vorhanden -> Ist das System noch eindeutig
@@ -86,7 +89,7 @@ public class Gauss {
 
 					// System nicht eindeutig loesbar.
 					log.info("Gleichungssystem nicht eindeutig loesbar!");
-					return null;
+					throw instance.new InfinitySolutionsException("System of linear equations has infinity solutions.");
 				}
 				break;
 			}
@@ -271,6 +274,22 @@ public class Gauss {
 				System.out.print("+");
 			}
 			System.out.println(df.format(vector[row]));
+		}
+	}
+	
+	public class InfinitySolutionsException extends Exception
+	{
+		public InfinitySolutionsException(String s)
+		{
+			super(s);
+		}
+	}
+	
+	public class NoSolutionException extends Exception
+	{
+		public NoSolutionException(String s)
+		{
+			super(s);
 		}
 	}
 	

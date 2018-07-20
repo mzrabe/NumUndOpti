@@ -540,6 +540,21 @@ public class Vector {
 	}
 	
 	/**
+	 * Calculate the sum of the vector components.
+	 * @param x - the vector
+	 * @return  - sum of the vector components
+	 */
+	public static double sumVector(double[] x)
+	{
+		double sum = 0;
+		for(double d : x)
+		{
+			sum+=d;
+		}
+		return sum;
+	}
+	
+	/**
 	 * Add the vector u to the vector v. the vector v will changed
 	 * @param v - the vector v which will increase, this instance will changed
 	 * @param u - the vector u which will increase v
@@ -673,6 +688,22 @@ public class Vector {
 			back[i] = Math.abs(c[i]);
 		}
 		return back;
+	}
+
+	/**
+	 * @param v - a vector
+	 * @return - the minimal value of this vector. The different between {@link #oneNorm(double[])} is that negative values are take into account.
+	 */
+	public static double min(double[] v)
+	{
+		double min = v[0];
+		
+		for(int i = 1;i<v.length;i++)
+		{
+			min = Math.min(min, v[i]);
+		}
+		
+		return min;
 	}
 	
 

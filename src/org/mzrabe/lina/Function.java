@@ -97,14 +97,34 @@ public abstract class Function implements MathOperation{
 		return back;
 	}
 	
-	public double integrate(double[] from, double[] to, double ... c) throws Exception
+	/**
+	 * Get the integration of this function from the value x1 to x2. Same as {@link Function#integrate(double[], double[], double...)} with x1 as double[]{x1} and x2 as double[]{x2}.
+	 * @param x1 - start parameter for the integration
+	 * @param x2 - end parameter for the integration
+	 * @param c - constant parameters of this function
+	 * @return - solution of the integration from x1 to x2
+	 * @throws Exception - if integration fails
+	 */
+	public double integrate(double x1, double x2, double ... c) throws Exception
 	{
-
+		return integrate(new double[] {x1}, new double[] {x2}, c);
+	}
+	
+	/**
+	 * Get the integration of this function from the value x1 to x2.
+	 * @param x1 - start parameter for the integration
+	 * @param x2 - end parameter for the integration
+	 * @param c - constant parameters of this function
+	 * @return - solution of the integration from x1 to x2
+	 * @throws Exception - if integration fails
+	 */
+	public double integrate(double[] x1, double[] x2, double ... c) throws Exception
+	{
 		int n = 1;
-		double[] h = new double[from.length];
+		double[] h = new double[x1.length];
 		for(int i = 0;i<h.length;i++)
 		{
-			h[i] = to[i]-from[i];
+			h[i] = x2[i]-x1[i];
 		}
 		
 		double d = h[0];
@@ -123,13 +143,13 @@ public abstract class Function implements MathOperation{
 		// 000, 100, 101, 001, 010, 110, 011, 111
 		// 000 001 010 011 100 101 110 111
 		
-		double temp[] = new double[from.length];
+		double temp[] = new double[x1.length];
 		
 		for(int i = 0;i<numP;i++)
 		{
 			for(int j = 0;j<comb.length;j++)
 			{
-				temp[j] = comb[j] == 0 ? from[j] : to[j];
+				temp[j] = comb[j] == 0 ? x1[j] : x2[j];
 			}
 			
 			p+=	getValue(temp, c);
@@ -164,12 +184,12 @@ public abstract class Function implements MathOperation{
 		
 		double T = d * p/(numP);
 		
-		for(int k = 0;k<100;k++)
+		for(int k = 0;k<10;k++)
 		{
 			double M = 0;
 			for(int j = 0;j<n;j++)
 			{
-				M += getValue(Vector.sum(from,Vector.multiScalar(h, j+0.5)), c);
+				M += getValue(Vector.sum(x1,Vector.multiScalar(h, j+0.5)), c);
 			}
 			M*=h[0];
 			T=(T+M)/2.;
@@ -180,12 +200,12 @@ public abstract class Function implements MathOperation{
 			n*=2.;
 			if(Math.abs(T-M) <= 0.01)
 			{
-				System.out.println("n = "+n);
-				System.out.println("h = "+h[0]);
+//				System.out.println("n = "+n);
+//				System.out.println("h = "+h[0]);
 				break;
 			}
 		}
-		System.out.println(String.format("T = %f", T));
+//		System.out.println(String.format("T = %f", T));
 		return T;
 	}
 }
