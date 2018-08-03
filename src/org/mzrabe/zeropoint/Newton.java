@@ -23,7 +23,7 @@ public class Newton
 	/** maximal number of iterations */
 	public static int maxIter = 1000;
 	/** iteration steps for logging */
-	public static int logStep = 50;
+	public static int logStep = 1;
 	private static final Logger log = LogManager.getRootLogger();
 	
 	

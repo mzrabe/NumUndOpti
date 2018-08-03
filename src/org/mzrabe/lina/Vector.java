@@ -500,12 +500,17 @@ public class Vector {
 	 * @param b - the other vector
 	 * @return - the result of the subtraction, new instance of a double[]
 	 */
-	public static double[] minus(double[] a, double[] b)
+	public static double[] minus(double[] ... v)
 	{
-		double[] back = Arrays.copyOf(a, a.length);
-		for(int i=0;i<back.length;i++)
-		{
-			back[i]-=b[i];
+		double[] back = Arrays.copyOf(v[0], v[0].length);
+		for (int j = 1;j<v.length;j++) {
+			if (v[j].length != v[0].length) {
+				throw new IllegalArgumentException("The vector must have the same dimension! Current vector "
+						+ v[j].length + " first vector length = " + v[0].length);
+			}
+			for (int i = 0; i < back.length; i++) {
+				back[i] -= v[j][i];
+			}
 		}
 		return back;
 	}

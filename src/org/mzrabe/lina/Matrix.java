@@ -964,14 +964,15 @@ public class Matrix {
 		 */
 		
 		int i_ = 0,j_ = 0;
-		double[][] A_ = new double[A.length][x.length - known_x];
-		double[] b_ = new double[A.length];
+		double[][] A_ = new double[x.length - known_x][x.length - known_x];
+		double[] b_ = new double[x.length - known_x];
 		
 		for(int i = 0;i<A.length;i++)
 		{
 //			if(i==A_.length)
 //				break;
-			
+			if(!Double.isNaN(x[i]))
+				continue;
 			b_[i_] = b[i];
 			j_ = 0;
 			for(int j = 0;j<A[0].length;j++)
@@ -1004,7 +1005,7 @@ public class Matrix {
 			}
 		}
 		
-		int rankAb = rankOfMatrix(A_, b_);
+//		int rankAb = rankOfMatrix(A_, b_);
 		int rankA = rankOfMatrix(A_); 
 		
 //		if(rankAb != rankA)
