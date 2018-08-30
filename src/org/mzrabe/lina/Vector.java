@@ -164,6 +164,12 @@ public class Vector {
 	 */
 	public static double[] vectorProdukt(double[] v, double[] u)
 	{
+		if(v == null)
+			throw new NullPointerException("The vector v is null");
+		
+		if(u == null)
+			throw new NullPointerException("The vector u is null");
+		
 		if(v.length != 3 || u.length != 3)
 			throw new IllegalArgumentException("The vectors needs a dimesion of 3. The dim(v) = " + v.length + " and dim(u)= " + u.length);
 		
