@@ -34,10 +34,13 @@ public class Gauss {
 		//make a copy of the vector
 		double[] vector = Arrays.copyOf(givenVector, givenVector.length);
 		
+		if (printSteps) {
+			System.out.println("----------------------------------------------------");
+		}
+		
 		// Das Gleichungssystem hat keine eindeutige Loesung!
 		if (matrix.length < matrix[0].length) {
-			log.info("Gleichungssystem nicht eindeutig loesbar! The number of rows ("+matrix.length+") are lower than the number of columns ("+matrix[0].length+").");
-			return null;
+			throw instance.new InfinitySolutionsException("System of linear equations has infinity solutions. The number of rows ("+matrix.length+") are lower than the number of columns ("+matrix[0].length+").");
 		}
 
 		// Merken der Spalte, welche eine Zahl ungleich null besitzt
@@ -69,13 +72,12 @@ public class Gauss {
 			if (tmpColumn == -1) {
 				for (int row = line; row < matrix.length; row++) {
 					// Gleichungssystem hat keine Loesung!
-					if (vector[line] != 0) {
+					if (vector[line] > 1e-15) {
 						// Wenn die Zwischenschritte ausgegeben werden sollen
 						if (printSteps) {
 							printStep(matrix, vector);
 						}
 
-						log.info("Gleichungssystem besitzt keine Loesung!");
 						throw instance.new NoSolutionException("System of linear equations has no solutions.");
 					}
 				}
@@ -88,7 +90,6 @@ public class Gauss {
 					}
 
 					// System nicht eindeutig loesbar.
-					log.info("Gleichungssystem nicht eindeutig loesbar!");
 					throw instance.new InfinitySolutionsException("System of linear equations has infinity solutions.");
 				}
 				break;

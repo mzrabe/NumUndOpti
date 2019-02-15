@@ -72,10 +72,19 @@ public class Vector {
 
 		double[] back;
 		
-		double gamma = angleRightHandRule(new double[]{r[0],r[1],0},YBASIS,ZBASIS);
-		double alpha = angleRightHandRule(new double[]{0,r[1],r[2]},ZBASIS,XBASIS);
+		/* rotate the rotation axes into the y-z area around the z-axes*/
+		double sina = r[0] / Math.sqrt(r[0]*r[0]+r[1]*r[1]);
+		double cosa = r[1] / Math.sqrt(r[0]*r[0]+r[1]*r[1]);
 		
-		double[][] RxRz = Matrix.multi(Matrix.getRx(alpha), Matrix.getRz(gamma));
+		double[][] Rz = {{cosa,-sina,0},{sina,cosa,0},{0,0,1}};
+		
+		/* rotate the rotation axes to the z axes */
+		double sinb = Math.sqrt(r[0]*r[0]+r[1]*r[1]);
+		double cosb = r[2];
+		
+		double[][] Rx = {{1,0,0},{0, cosb,-sinb},{0,sinb, cosb}};
+		
+		double[][] RxRz = Matrix.multi(Rx, Rz);
 		
 		back = Matrix.multi(Matrix.trans(RxRz), Matrix.multi(Matrix.getRz(phi), Matrix.multi(RxRz, v)));
 		
@@ -124,15 +133,19 @@ public class Vector {
 			back = rotateZAxis(back, -phi);
 		else
 		{
-//			double alpha = Math.acos(r[2]);
-//			double gamma = (r[0] == 0 && r[1] == 0) ? 0 : Math.asin(r[0]/Math.sqrt(r[0]*r[0]+r[1]*r[1]));
+			/* rotate the rotation axes into the y-z area around the z-axes*/
+			double sina = r[0] / Math.sqrt(r[0]*r[0]+r[1]*r[1]);
+			double cosa = r[1] / Math.sqrt(r[0]*r[0]+r[1]*r[1]);
 			
-			/* rotate the rotation axes into the y-z area */
-			double gamma = (r[0] == 0 && r[1] == 0) ? 0 : angleRightHandRule(new double[]{r[0],r[1],0},YBASIS,ZBASIS);
+			double[][] Rz = {{cosa,-sina,0},{sina,cosa,0},{0,0,1}};
+			
 			/* rotate the rotation axes to the z axes */
-			double alpha =  angleRightHandRule(new double[]{0,r[1],r[2]},ZBASIS,XBASIS);
+			double sinb = Math.sqrt(r[0]*r[0]+r[1]*r[1]);
+			double cosb = r[2];
 			
-			double[][] RxRz = Matrix.multi(Matrix.getRx(alpha), Matrix.getRz(gamma));
+			double[][] Rx = {{1,0,0},{0, cosb,-sinb},{0,sinb, cosb}};
+			
+			double[][] RxRz = Matrix.multi(Rx, Rz);
 			
 			back = Matrix.multi(Matrix.trans(RxRz), Matrix.multi(Matrix.getRz(phi), Matrix.multi(RxRz, back)));
 		}
@@ -300,7 +313,7 @@ public class Vector {
 	 * @param v - the one vector
 	 * @param u - the other vector
 	 * @return - the angle between the vectors in radiant
-	 * 
+	 * @deprecated - not correct
 	 */
 	public static double angleRightHandRule(double[] v, double[] u)
 	{
@@ -326,7 +339,7 @@ public class Vector {
 	 * @param u - the other vector
 	 * @param rotationAxes - the wanted rotation axes, you have to be sure that the vector product of v and u is collinear to the rotationAxes
 	 * @return - the angle between the vectors in radiant, if the rotationAxes shows in the opposite direction of the vector product of u and v the angel will be negative
-	 * 
+	 * @deprecated - not correct
 	 */
 	public static double angleRightHandRule(double[] v, double[] u, double[] rotationAxes)
 	{
@@ -341,7 +354,9 @@ public class Vector {
 		double[] vxu = vectorProdukt(v, u);
 		
 		double normVxU = twoNorm(vxu);
-		double negative = (vxu[0]*-1 == rotationAxes[0] && vxu[1]*-1 == rotationAxes[1] && vxu[2]*-1 == rotationAxes[2]) ? -1 : 1;
+		vxu= getNormVector(vxu);
+		
+		double negative = directonEquals(vxu, rotationAxes, false) ? 1 : -1;
 		
 		return negative * Math.asin(normVxU/(normV * normU));
 	}
