@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mzrabe</groupId>
 	<artifactId>NumUndOpti</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-RELEASE</version>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -37,6 +37,11 @@
 			<groupId>org.knowm.xchart</groupId>
 			<artifactId>xchart</artifactId>
 			<version>3.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>gov.nist.math</groupId>
+			<artifactId>jama</artifactId>
+			<version>1.0.3</version>
 		</dependency>
 	</dependencies>
 	<repositories>
