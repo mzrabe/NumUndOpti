@@ -62,6 +62,11 @@
 			<artifactId>xchart</artifactId>
 			<version>3.3.1</version>
 		</dependency>
+		<dependency>
+			<groupId>gov.nist.math</groupId>
+			<artifactId>jama</artifactId>
+			<version>1.0.3</version>
+		</dependency>
 	</dependencies>
 	<repositories>
 		<repository>

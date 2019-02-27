@@ -780,37 +780,11 @@ public class Matrix {
 		return b;
 	}
 	
-	public static void swap(double mat[][], int row1, int row2, int col)
-	{
-		for (int i = 0; i < col; i++)
-		{
-			double temp = mat[row1][i];
-			mat[row1][i] = mat[row2][i];
-			mat[row2][i] = temp;
-		}
-	}
-
-	// Function to display a matrix
-	static void display(double mat[][], int row, int col)
-	{
-		for (int i = 0; i < row; i++)
-		{
-
-			for (int j = 0; j < col; j++)
-
-				System.out.print(" " + mat[i][j]);
-
-			System.out.print("\n");
-		}
-	}
-	
 	/**
-	 * Function for finding rank of coefficient vector matrix.
-	 * This code is contributed by Anant Agarwal
+	 * Function for finding rank of coefficient vector matrix. This method use the library of JAMA.
 	 * @param mat - matrix
 	 * @param vector - vector
 	 * @return - rank of the given coefficient vector matrix
-	 * @author Anant Agarwal
 	 */
 	public static int rankOfMatrix(double mat[][], double[] vector)
 	{
@@ -824,7 +798,7 @@ public class Matrix {
 			for(int j = 0; j<A[0].length;j++)
 			{
 				if(j==A[0].length-1)
-					A[i][j] = vector[j];
+					A[i][j] = vector[i];
 				else
 					A[i][j] = mat[i][j];
 			}
@@ -834,103 +808,13 @@ public class Matrix {
 	}
 
 	/**
-	 * Function for finding rank of matrix.
-	 * This code is contributed by Anant Agarwal
+	 * Function for finding rank of matrix. This method use the library of JAMA.
 	 * @param mat - matrix
 	 * @return - rank of the given matrix
-	 * @author Anant Agarwal
 	 */
 	public static int rankOfMatrix(double mat[][])
 	{
-		double[][] A = new double[mat.length][];
-		/* make a copy of mat */
-		for(int i = 0; i<A.length;i++)
-		{
-			A[i] = Arrays.copyOf(mat[i], mat[i].length);
-		}
-		int rank = A[0].length;
-
-		for (int row = 0; row < rank; row++)
-		{
-
-			// Before we visit current row
-			// 'row', we make sure that
-			// A[row][0],....A[row][row-1]
-			// are 0.
-
-			// Diagonal element is not zero
-			if (A[row][row] != 0)
-			{
-				for (int col = 0; col < A.length; col++)
-				{
-					if (col != row)
-					{
-						// This makes all entries
-						// of current column
-						// as 0 except entry
-						// 'A[row][row]'
-						double mult = (double) A[col][row] / A[row][row];
-
-						for (int i = 0; i < rank; i++)
-
-							A[col][i] -= mult * A[row][i];
-					}
-				}
-			}
-
-			// Diagonal element is already zero.
-			// Two cases arise:
-			// 1) If there is a row below it
-			// with non-zero entry, then swap
-			// this row with that row and process
-			// that row
-			// 2) If all elements in current
-			// column below A[r][row] are 0,
-			// then remvoe this column by
-			// swapping it with last column and
-			// reducing number of columns by 1.
-			else
-			{
-				boolean reduce = true;
-
-				// Find the non-zero element
-				// in current column
-				for (int i = row + 1; i < A.length; i++)
-				{
-					// Swap the row with non-zero
-					// element with this row.
-					if (A[i][row] != 0)
-					{
-						swap(A, row, i, rank);
-						reduce = false;
-						break;
-					}
-				}
-
-				// If we did not find any row with
-				// non-zero element in current
-				// columnm, then all values in
-				// this column are 0.
-				if (reduce)
-				{
-					// Reduce number of columns
-					rank--;
-
-					// Copy the last column here
-					for (int i = 0; i < A.length; i++)
-						A[i][row] = A[i][rank];
-				}
-
-				// Process this row again
-				row--;
-			}
-
-			// Uncomment these lines to see
-			// intermediate results display(A, R, C);
-			// printf("\n");
-		}
-
-		return rank;
+		return new Jama.Matrix(mat).rank();
 	}
 	
 	/**
@@ -964,15 +848,15 @@ public class Matrix {
 		 */
 		
 		int i_ = 0,j_ = 0;
-		double[][] A_ = new double[x.length - known_x][x.length - known_x];
-		double[] b_ = new double[x.length - known_x];
+		double[][] A_ = new double[x.length][x.length - known_x];
+		double[] b_ = new double[x.length];
 		
 		for(int i = 0;i<A.length;i++)
 		{
 //			if(i==A_.length)
 //				break;
-			if(!Double.isNaN(x[i]))
-				continue;
+//			if(!Double.isNaN(x[i]))
+//				continue;
 			b_[i_] = b[i];
 			j_ = 0;
 			for(int j = 0;j<A[0].length;j++)
@@ -1005,11 +889,11 @@ public class Matrix {
 			}
 		}
 		
-//		int rankAb = rankOfMatrix(A_, b_);
+		int rankAb = rankOfMatrix(A_, b_);
 		int rankA = rankOfMatrix(A_); 
 		
-//		if(rankAb != rankA)
-//			throw new Gauss().new NoSolutionException("No solution.");
+		if(rankAb != rankA)
+			throw new Gauss().new NoSolutionException("No solution.");
 		
 		double[][] A_final = new double[rankA][A_[0].length];
 		double[]   b_final = new double[rankA];
