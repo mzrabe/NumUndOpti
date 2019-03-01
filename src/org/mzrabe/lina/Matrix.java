@@ -893,7 +893,7 @@ public class Matrix {
 		int rankA = rankOfMatrix(A_); 
 		
 		if(rankAb != rankA)
-			throw new Gauss().new NoSolutionException("No solution.");
+			throw new Gauss().new NoSolutionException("No solution. rank(Ab) = " + rankAb + ", rank(A) = " + rankA);
 		
 		double[][] A_final = new double[rankA][A_[0].length];
 		double[]   b_final = new double[rankA];
@@ -916,7 +916,7 @@ public class Matrix {
 			}
 		}
 		
-		double[] x_ = Gauss.getSolution(A_final, b_final, false);
+		double[] x_ = new Jama.Matrix(A_).solve(new Jama.Matrix(b_,b_.length)).getColumnPackedCopy();//Gauss.getSolution(A_final, b_final, false);
 		
 		i_ = 0;
 		for(int i = 0;i<x.length;i++)
