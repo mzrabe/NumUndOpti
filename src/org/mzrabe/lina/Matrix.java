@@ -417,6 +417,9 @@ public class Matrix {
 	 */
 	public static double[] multi(double[][] A, double[] v)
 	{
+		if(A.length == 0)
+			return new double[0];
+		
 			if(A[0].length != v.length)
 				throw new IllegalArgumentException("Could not multiply matrix A["+A.length+"]["+A[0].length+"] * v["+v.length+"] because of the dimension.");
 			
@@ -893,28 +896,31 @@ public class Matrix {
 		int rankA = rankOfMatrix(A_); 
 		
 		if(rankAb != rankA)
-			throw new Gauss().new NoSolutionException("No solution. rank(Ab) = " + rankAb + ", rank(A) = " + rankA);
-		
-		double[][] A_final = new double[rankA][A_[0].length];
-		double[]   b_final = new double[rankA];
-		
-		i_ = 0;
-		for(int i = 0; i<A_.length;i++)
 		{
-			if(i_ == A_final.length)
-				break;
-			
-			if(!zero.contains(i))
-			{
-				for(int j = 0;j<A_[0].length;j++)
-				{
-					A_final[i_][j]=A_[i][j];
-				}
-				
-				b_final[i_] = b_[i];
-				i_++;
-			}
+//			Matrix.printMatix(A_);
+//			Vector.print(b_);
+			//throw new Gauss().new NoSolutionException("No solution. rank(Ab) = " + rankAb + ", rank(A) = " + rankA);
 		}
+//		double[][] A_final = new double[rankA][A_[0].length];
+//		double[]   b_final = new double[rankA];
+//		
+//		i_ = 0;
+//		for(int i = 0; i<A_.length;i++)
+//		{
+//			if(i_ == A_final.length)
+//				break;
+//			
+//			if(!zero.contains(i))
+//			{
+//				for(int j = 0;j<A_[0].length;j++)
+//				{
+//					A_final[i_][j]=A_[i][j];
+//				}
+//				
+//				b_final[i_] = b_[i];
+//				i_++;
+//			}
+//		}
 		
 		double[] x_ = new Jama.Matrix(A_).solve(new Jama.Matrix(b_,b_.length)).getColumnPackedCopy();//Gauss.getSolution(A_final, b_final, false);
 		

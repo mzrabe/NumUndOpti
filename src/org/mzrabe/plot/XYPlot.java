@@ -30,7 +30,6 @@ public class XYPlot {
     public XYPlot addDataSet(String title, double[] X, double[] Y)
     {
     	chart.addSeries(title, X, Y);
-    	
     	if(Double.isNaN(Xmin) == false)
 			chart.getStyler().setXAxisMin(Xmin);
     	if(Double.isNaN(Xmax) == false)
